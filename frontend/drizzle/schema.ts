@@ -1,11 +1,12 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import { sql } from "drizzle-orm"
 
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   jiraKey: text("jira_key"),
   description: text("description"),
-  createdAt: text("created_at").default("datetime('now')"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
 
 export const localTasks = sqliteTable("local_tasks", {
@@ -18,7 +19,7 @@ export const localTasks = sqliteTable("local_tasks", {
   projectId: integer("project_id").references(() => projects.id),
   jiraIssueId: text("jira_issue_id"),
   synced: integer("synced", { mode: "boolean" }).default(false),
-  createdAt: text("created_at").default("datetime('now')"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
 
 export const chatHistory = sqliteTable("chat_history", {
@@ -26,7 +27,7 @@ export const chatHistory = sqliteTable("chat_history", {
   sessionId: text("session_id").notNull(),
   role: text("role").notNull(),
   content: text("content").notNull(),
-  createdAt: text("created_at").default("datetime('now')"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
 
 export const calendarEvents = sqliteTable("calendar_events", {
@@ -36,5 +37,5 @@ export const calendarEvents = sqliteTable("calendar_events", {
   eventType: text("event_type").notNull(),
   source: text("source").default("local"),
   projectId: integer("project_id").references(() => projects.id),
-  createdAt: text("created_at").default("datetime('now')"),
+  createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
