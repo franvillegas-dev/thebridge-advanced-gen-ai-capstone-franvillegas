@@ -2,20 +2,32 @@
 
 ## Branches
 
-- **`develop`** — Main development branch. All feature work merges here.
-- **`main`** — Production-only. Only merged from `develop` for releases.
-- **`feature/<name>`** — New features branch off `develop` and merge back into `develop` when complete.
+- **`main`** — Production-only. Solo se mergea desde `develop` para releases.
+- **`develop`** — Rama principal de integración. Todo el trabajo confluye aquí mediante merges.
+- **`feature/<name>`** — Nuevas funcionalidades. Sale de `develop` y vuelve a `develop`.
+- **`fix/<name>`** — Corrección de bugs. Sale de `develop` y vuelve a `develop`.
+- **`docs/<name>`** — Documentación o configuración. Sale de `develop` y vuelve a `develop`.
 
-## Workflow for agents
+Quedan totalmente prohibidos los commits directos a `develop` o `main`.
 
-1. Always branch off `develop`:
+## Workflow para agentes
+
+1. Siempre crear una rama desde `develop`:
    ```
-   git checkout develop && git pull && git checkout -b feature/<short-description>
+   git checkout develop && git pull && git checkout -b <tipo>/<descripcion-corta>
    ```
-2. Work on your feature, commit often.
-3. When the feature is complete, merge back to `develop`:
+   Los tipos válidos son `feature`, `fix` o `docs`.
+
+2. Trabajar en la rama, hacer commits con mensajes descriptivos.
+
+3. Al completar la tarea, integrar los cambios en `develop` con merge:
    ```
-   git checkout develop && git merge feature/<short-description>
+   git checkout develop && git pull && git merge <nombre-de-la-rama> --no-ff
    ```
-4. Delete the feature branch after merging.
-5. Never commit directly to `main`. `main` is only for production releases via manual merge from `develop`.
+
+4. Eliminar la rama de trabajo después del merge:
+   ```
+   git branch -d <nombre-de-la-rama>
+   ```
+
+5. `main` es solo para pases a producción vía merge manual desde `develop`. No se toca directamente.
