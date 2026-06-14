@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:./drizzle/data.db
+      - JIRA_URL=${JIRA_URL}
+      - JIRA_EMAIL=${JIRA_EMAIL}
+      - JIRA_API_TOKEN=${JIRA_API_TOKEN}
+      - JIRA_MCP_SERVER=${JIRA_MCP_SERVER}
+    volumes:
+      - ./frontend/drizzle:/app/drizzle
