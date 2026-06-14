@@ -1,7 +1,5 @@
 import os
-import json
 import httpx
-from typing import Optional
 
 
 class JiraMCPClient:
@@ -9,7 +7,7 @@ class JiraMCPClient:
         self.base_url = os.getenv("JIRA_URL", "").rstrip("/")
         self.email = os.getenv("JIRA_EMAIL", "")
         self.token = os.getenv("JIRA_API_TOKEN", "")
-        self.mcp_server_url = os.getenv("JIRA_MCP_SERVER")
+        self.mcp_server_url = os.getenv("JIRA_MCP_SERVER", "").rstrip("/") or None
 
     async def search_issues(self, jql: str, max_results: int = 20) -> list[dict]:
         if self.mcp_server_url:
