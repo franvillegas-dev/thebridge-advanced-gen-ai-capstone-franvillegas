@@ -1,4 +1,4 @@
-from langchain_core.messages import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from .state import AgentState
 
@@ -13,16 +13,18 @@ Route the user's message to the most appropriate specialist agent:
 
 Respond with ONLY the agent name: jira_agent, tasks_agent, calendar_agent, story_agent, or chat"""
 
-
-def create_supervisor_chain():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    return SUPERVISOR_PROMPT | llm
+_prompt = ChatPromptTemplate.from_messages([
+    ("system", SUPERVISOR_PROMPT),
+    ("human", "{input}"),
+])
+_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+_supervisor_chain = _prompt | _llm
 
 
 def route_to_agent(state: AgentState) -> str:
     messages = state["messages"]
-    chain = create_supervisor_chain()
-    response = chain.invoke({"messages": messages})
+    last_message = messages[-1].content if messages else ""
+    response = _supervisor_chain.invoke({"input": last_message})
     agent_name = response.content.strip().lower()
     valid_agents = {"jira_agent", "tasks_agent", "calendar_agent", "story_agent", "chat"}
     return agent_name if agent_name in valid_agents else "chat"
