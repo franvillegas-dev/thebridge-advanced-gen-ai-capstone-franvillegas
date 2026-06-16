@@ -26,6 +26,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true)
   const sessionId = useRef(crypto.randomUUID())
   const streamingRef = useRef("")
+  const messagesRef = useRef<Message[]>([])
+  messagesRef.current = messages
 
   const sendMessage = useCallback(async (message: string) => {
     setMessages((prev) => [...prev, { role: "user", content: message }])
@@ -37,7 +39,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, session_id: sessionId.current }),
+        body: JSON.stringify({
+          message,
+          session_id: sessionId.current,
+          previous_messages: messagesRef.current,
+        }),
       })
 
       const reader = response.body?.getReader()
@@ -58,7 +64,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           if (line.startsWith("data: ")) {
             const data = line.slice(6)
             if (data === "[DONE]") continue
-            streamingRef.current += data
+            const decoded = data.replace(/\\n/g, "\n")
+            streamingRef.current += decoded
             setStreamingContent(streamingRef.current)
           }
         }
