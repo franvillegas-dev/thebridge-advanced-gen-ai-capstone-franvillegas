@@ -12,7 +12,7 @@ export function ChatPanel() {
     <>
       <aside
         className={`
-          fixed right-0 top-0 bottom-0 z-40 flex flex-col
+          fixed right-0 top-14 bottom-0 z-40 flex flex-col
           border-l border-border/40 bg-background/90 backdrop-blur-xl
           transition-transform duration-300
           ${isOpen ? "translate-x-0" : "translate-x-full"}
