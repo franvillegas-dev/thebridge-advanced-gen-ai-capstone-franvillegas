@@ -1,28 +1,33 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
-import { ChatMessage } from "./ChatMessage"
-import { ChatInput } from "./ChatInput"
+import { useState, useRef, useCallback, createContext, useContext } from "react"
 
 interface Message {
   role: "user" | "assistant"
   content: string
 }
 
-export function ChatStream() {
+interface ChatContextValue {
+  messages: Message[]
+  streamingContent: string
+  isLoading: boolean
+  isOpen: boolean
+  sendMessage: (text: string) => Promise<void>
+  togglePanel: () => void
+  closePanel: () => void
+}
+
+const ChatContext = createContext<ChatContextValue | null>(null)
+
+export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [streamingContent, setStreamingContent] = useState("")
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
   const sessionId = useRef(crypto.randomUUID())
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, streamingContent])
-
   const streamingRef = useRef("")
 
-  const handleSend = useCallback(async (message: string) => {
+  const sendMessage = useCallback(async (message: string) => {
     setMessages((prev) => [...prev, { role: "user", content: message }])
     setIsLoading(true)
     setStreamingContent("")
@@ -58,8 +63,8 @@ export function ChatStream() {
           }
         }
       }
-    } catch (error) {
-      streamingRef.current = `Error: ${error}`
+    } catch {
+      streamingRef.current = "Lo siento, no pude conectar con el asistente. Verifica tu conexión e intenta de nuevo."
       setStreamingContent(streamingRef.current)
     } finally {
       setIsLoading(false)
@@ -69,16 +74,18 @@ export function ChatStream() {
     }
   }, [])
 
+  const togglePanel = useCallback(() => setIsOpen((prev) => !prev), [])
+  const closePanel = useCallback(() => setIsOpen(false), [])
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} />
-        ))}
-        {streamingContent && <ChatMessage role="assistant" content={streamingContent} />}
-        <div ref={messagesEndRef} />
-      </div>
-      <ChatInput onSend={handleSend} disabled={isLoading} />
-    </div>
+    <ChatContext.Provider value={{ messages, streamingContent, isLoading, isOpen, sendMessage, togglePanel, closePanel }}>
+      {children}
+    </ChatContext.Provider>
   )
+}
+
+export function useChat() {
+  const ctx = useContext(ChatContext)
+  if (!ctx) throw new Error("useChat must be used within ChatProvider")
+  return ctx
 }
