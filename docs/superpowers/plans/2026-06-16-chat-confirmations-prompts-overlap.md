@@ -212,11 +212,11 @@ Remove the old `CHAT_PROMPT = """..."""` block.
 
 - [ ] **Step 4: Run a smoke test**
 
-Run:
+Run from the repository root:
 
 ```bash
-cd /Users/franvillegas/DEV/thebridge-advanced-gen-ai-capstone-franvillegas/backend
-source venv/bin/activate
+cd /Users/franvillegas/DEV/thebridge-advanced-gen-ai-capstone-franvillegas
+source backend/venv/bin/activate
 python -c "from backend.agent_graph.prompts import SUPERVISOR_PROMPT, TASKS_AGENT_PROMPT, CALENDAR_AGENT_PROMPT, CHAT_PROMPT; print('supervisor:', SUPERVISOR_PROMPT[:30]); print('tasks:', TASKS_AGENT_PROMPT[:30]); print('calendar:', CALENDAR_AGENT_PROMPT[:30]); print('chat:', CHAT_PROMPT[:30])"
 ```
 
