@@ -52,12 +52,7 @@ export async function POST(req: NextRequest) {
               const trimmed = fullOutput.trim()
               try {
                 const result = JSON.parse(trimmed)
-                if (result.agent) {
-                  controller.enqueue(encoder.encode(encodeEvent({ type: "agent", agent: result.agent })))
-                }
-                if (result.content !== undefined) {
-                  controller.enqueue(encoder.encode(encodeEvent({ type: "chunk", content: result.content })))
-                }
+                controller.enqueue(encoder.encode(encodeEvent({ type: "response", ...result })))
               } catch {
                 controller.enqueue(encoder.encode(encodeEvent({ type: "chunk", content: trimmed })))
               }
