@@ -3,7 +3,6 @@ from langchain_core.messages import SystemMessage
 from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate_limited
 from ..tools.jira_tools import jira_tools
 from .state import AgentState
-from .utils import extract_text
 
 logger = logging.getLogger("agile_agent.jira_agent")
 
@@ -25,29 +24,15 @@ def create_jira_agent():
 def handle_jira(state: AgentState) -> AgentState:
     from langchain_core.messages import AIMessage
     messages = state["messages"]
-    session_id = state.get("context", {}).get("session_id", "")
-    last_message = messages[-1].content if messages else ""
-    logger.info(
-        "Jira agent invoked — session_id=%s, history=%d, last_message=%s",
-        session_id or "n/a",
-        len(messages),
-        last_message[:200] if isinstance(last_message, str) else str(last_message)[:200],
-    )
+    logger.info("Jira agent invoked — messages in history: %d", len(messages))
     try:
         agent = create_jira_agent()
         system_msg = SystemMessage(content=JIRA_AGENT_PROMPT)
         response = invoke_with_retry(agent, [system_msg] + messages)
-        tool_calls = getattr(response, "tool_calls", None)
-        logger.info(
-            "Jira agent response — session_id=%s, content_length=%d, tool_calls=%s",
-            session_id or "n/a",
-            len(extract_text(response.content)),
-            len(tool_calls) if tool_calls else 0,
-        )
-        logger.debug("Jira agent response content: %s", extract_text(response.content)[:500])
+        logger.info("Jira agent response received — content: %s", str(response.content)[:200])
         return {**state, "current_agent": "jira_agent", "messages": state["messages"] + [response]}
     except Exception as e:
-        logger.error("Jira agent error — session_id=%s, error=%s", session_id or "n/a", e)
+        logger.error("Jira agent error: %s", e)
         if is_rate_limited(e):
             fallback_model = get_fallback_model_name()
             if fallback_model:

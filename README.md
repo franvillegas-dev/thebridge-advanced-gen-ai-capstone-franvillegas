@@ -48,33 +48,6 @@ npm run dev                   # http://localhost:3000
 
 El backend se ejecuta automáticamente como subproceso desde Next.js al enviar un mensaje.
 
-### Trazabilidad y logs
-
-El backend emite trazas estructuradas para cada interacción:
-
-- Inicio y fin de cada invocación al grafo (`session_id`, número de mensajes, agente final).
-- Decisiones del supervisor (mensaje de entrada y agente seleccionado).
-- Invocaciones de cada agente con el mensaje recibido y la respuesta generada.
-- Llamadas a herramientas: nombre, argumentos y resultado.
-- Errores con contexto completo.
-
-Puedes controlar el formato y nivel mediante variables de entorno en `backend/.env`:
-
-```
-AGILE_LOG_LEVEL=INFO        # DEBUG | INFO | WARNING | ERROR
-AGILE_LOG_FORMAT=text       # text | json
-```
-
-Las trazas aparecen en `stderr` del subproceso Python y se muestran en la consola de Next.js.
-
-### Estados visuales del chat
-
-El panel de chat muestra indicadores claros de estado:
-
-- **Procesando**: avatar pulsante, puntos animados y etiqueta del agente activo.
-- **Error**: mensaje resaltado en rojo con icono de alerta y banner inferior.
-- **Agente activo**: cada respuesta del asistente muestra la etiqueta del agente que la generó (`Jira Agent`, `Tasks Agent`, etc.).
-
 ### Variables de entorno
 
 Las credenciales sensibles (Jira, Google AI) se configuran en `backend/.env`:

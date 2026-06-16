@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const endDate = searchParams.get("end_date")
   const projectId = searchParams.get("project_id")
 
-  const conditions = []
+  let conditions = []
   if (startDate) conditions.push(gte(calendarEvents.eventDate, startDate))
   if (endDate) conditions.push(lte(calendarEvents.eventDate, endDate))
   if (projectId) conditions.push(eq(calendarEvents.projectId, parseInt(projectId)))
