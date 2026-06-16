@@ -31,6 +31,8 @@ export const calendarEvents = sqliteTable("calendar_events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   eventDate: text("event_date").notNull(),
+  startTime: text("start_time"),
+  endTime: text("end_time"),
   eventType: text("event_type").notNull(),
   source: text("source").default("local"),
   projectId: integer("project_id").references(() => projects.id),
