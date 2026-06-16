@@ -5,15 +5,11 @@ from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from .state import AgentState
 from .supervisor import route_to_agent
-from .jira_agent import handle_jira
 from .tasks_agent import handle_tasks
 from .calendar_agent import handle_calendar
-from .story_agent import handle_story
 from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate_limited
-from ..tools.jira_tools import jira_tools
 from ..tools.tasks_tools import tasks_tools
 from ..tools.calendar_tools import calendar_tools
-from ..tools.story_tools import story_tools
 from .utils import extract_text
 
 logger = logging.getLogger("agile_agent.graph")
@@ -21,7 +17,7 @@ logger = logging.getLogger("agile_agent.graph")
 CHAT_PROMPT = """You are a helpful AI assistant for an Agile project management system.
 Answer the user's question conversationally. Be concise and friendly."""
 
-all_tools = jira_tools + tasks_tools + calendar_tools + story_tools
+all_tools = tasks_tools + calendar_tools
 tool_node = ToolNode(all_tools)
 
 
@@ -152,10 +148,8 @@ def build_graph() -> StateGraph:
 
     workflow.add_node("log_start", log_invocation)
     workflow.add_node("supervisor", lambda state: state)
-    workflow.add_node("jira_agent", handle_jira)
     workflow.add_node("tasks_agent", handle_tasks)
     workflow.add_node("calendar_agent", handle_calendar)
-    workflow.add_node("story_agent", handle_story)
     workflow.add_node("responder", handle_chat)
     workflow.add_node("tools", logged_tool_node)
 
@@ -165,15 +159,13 @@ def build_graph() -> StateGraph:
         "supervisor",
         route_to_agent,
         {
-            "jira_agent": "jira_agent",
             "tasks_agent": "tasks_agent",
             "calendar_agent": "calendar_agent",
-            "story_agent": "story_agent",
             "chat": "responder",
         },
     )
 
-    for agent in ["jira_agent", "tasks_agent", "calendar_agent", "story_agent"]:
+    for agent in ["tasks_agent", "calendar_agent"]:
         workflow.add_conditional_edges(
             agent,
             should_continue,
@@ -184,10 +176,8 @@ def build_graph() -> StateGraph:
         "tools",
         lambda state: state.get("current_agent", "responder"),
         {
-            "jira_agent": "jira_agent",
             "tasks_agent": "tasks_agent",
             "calendar_agent": "calendar_agent",
-            "story_agent": "story_agent",
             "responder": "responder",
         },
     )
