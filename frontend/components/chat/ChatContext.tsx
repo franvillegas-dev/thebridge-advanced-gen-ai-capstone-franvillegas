@@ -34,10 +34,8 @@ interface ChatContextValue {
 const ChatContext = createContext<ChatContextValue | null>(null)
 
 const AGENT_LABELS: Record<string, string> = {
-  jira_agent: "Jira Agent",
   tasks_agent: "Tasks Agent",
   calendar_agent: "Calendar Agent",
-  story_agent: "Story Agent",
   chat: "Assistant",
 }
 

@@ -72,7 +72,6 @@ def main():
     state = {
         "messages": messages,
         "current_agent": None,
-        "pending_publish": [],
         "context": {"session_id": session_id},
     }
 

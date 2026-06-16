@@ -6,16 +6,14 @@ from .utils import extract_text
 
 logger = logging.getLogger("agile_agent.supervisor")
 
-SUPERVISOR_PROMPT = """You are a supervisor agent for a Jira project management system.
+SUPERVISOR_PROMPT = """You are a supervisor agent for a task and calendar management system.
 Route the user's message to the most appropriate specialist agent:
 
-- jira_agent: For anything about Jira issues, sprints, reports, searching projects
-- tasks_agent: For daily tasks, todo lists, task management, publishing to Jira
-- calendar_agent: For deadlines, milestones, sprint timelines, dates
-- story_agent: For refining user stories, splitting stories, estimating effort
+- tasks_agent: For daily tasks, todo lists, task management
+- calendar_agent: For deadlines, milestones, dates, calendar events
 - chat: For general conversation, greetings, help
 
-Respond with ONLY the agent name: jira_agent, tasks_agent, calendar_agent, story_agent, or chat"""
+Respond with ONLY the agent name: tasks_agent, calendar_agent, or chat"""
 
 _prompt = ChatPromptTemplate.from_messages([
     ("system", SUPERVISOR_PROMPT),
@@ -65,13 +63,13 @@ def route_to_agent(state: AgentState) -> str:
                         fallback_model,
                         agent_name,
                     )
-                    if agent_name in {"jira_agent", "tasks_agent", "calendar_agent", "story_agent", "chat"}:
+                    if agent_name in {"tasks_agent", "calendar_agent", "chat"}:
                         return agent_name
                 except Exception as e2:
                     logger.error("Fallback supervisor also failed: %s", e2)
         logger.info("Supervisor fallback to chat due to error")
         return "chat"
-    valid_agents = {"jira_agent", "tasks_agent", "calendar_agent", "story_agent", "chat"}
+    valid_agents = {"tasks_agent", "calendar_agent", "chat"}
     if agent_name not in valid_agents:
         logger.warning(
             "Supervisor returned invalid agent — session_id=%s, raw_response=%s, falling_back=chat",

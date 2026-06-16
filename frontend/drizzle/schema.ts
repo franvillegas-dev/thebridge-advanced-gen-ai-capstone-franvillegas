@@ -4,7 +4,6 @@ import { sql } from "drizzle-orm"
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  jiraKey: text("jira_key"),
   description: text("description"),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
@@ -17,8 +16,6 @@ export const localTasks = sqliteTable("local_tasks", {
   priority: text("priority").default("medium"),
   dueDate: text("due_date"),
   projectId: integer("project_id").references(() => projects.id),
-  jiraIssueId: text("jira_issue_id"),
-  synced: integer("synced", { mode: "boolean" }).default(false),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
 })
 

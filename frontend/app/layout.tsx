@@ -10,13 +10,12 @@ import { ToastProvider } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { ChatProvider } from "@/components/chat/ChatContext"
 import { ChatPanel } from "@/components/chat/ChatPanel"
-import { ConfigChecker } from "@/components/ConfigChecker"
 import { SidebarDesktop, SidebarMobile } from "@/components/layout/SidebarNav"
 import { Header } from "@/components/layout/Header"
 
 export const metadata: Metadata = {
   title: "Agile Agent",
-  description: "AI-powered Jira project management",
+  description: "AI-powered task and calendar management",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -33,7 +32,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
               </main>
             </div>
-            <ConfigChecker />
             <ChatPanel />
             <Toaster />
           </ChatProvider>

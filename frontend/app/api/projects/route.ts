@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const project = await db.insert(projects).values({
     name: body.name,
-    jiraKey: body.jira_key || null,
     description: body.description || "",
   }).returning()
   return NextResponse.json({ project: project[0] }, { status: 201 })

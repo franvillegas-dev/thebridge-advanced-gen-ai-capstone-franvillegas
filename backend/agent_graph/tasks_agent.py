@@ -10,9 +10,8 @@ logger = logging.getLogger("agile_agent.tasks_agent")
 TASKS_AGENT_PROMPT = """You are a task management specialist. You help users:
 - Create, list, update, delete local tasks
 - View today's pending tasks
-- Publish local tasks to Jira as issues
 
-Local tasks are private to this system until published to Jira."""
+Local tasks are stored in the system's SQLite database."""
 
 
 def create_tasks_agent():
