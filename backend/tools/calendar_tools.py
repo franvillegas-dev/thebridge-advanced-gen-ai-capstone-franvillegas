@@ -18,6 +18,50 @@ def get_db():
     return conn
 
 
+def _time_to_minutes(t: str) -> int:
+    """Convert an HH:MM time string to minutes since midnight."""
+    if not isinstance(t, str):
+        raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.")
+    parts = t.split(":")
+    if len(parts) != 2 or not (1 <= len(parts[0]) <= 2) or not (1 <= len(parts[1]) <= 2):
+        raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.")
+    try:
+        h, m = map(int, parts)
+    except ValueError as exc:
+        raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.") from exc
+    if not (0 <= h < 24 and 0 <= m < 60):
+        raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.")
+    return h * 60 + m
+
+
+def _intervals_overlap(start_a: str, end_a: str, start_b: str, end_b: str) -> bool:
+    """Return True if two [start, end) intervals overlap."""
+    a_start = _time_to_minutes(start_a)
+    a_end = _time_to_minutes(end_a)
+    b_start = _time_to_minutes(start_b)
+    b_end = _time_to_minutes(end_b)
+    if not (a_start < a_end and b_start < b_end):
+        raise ValueError("Interval start must be before interval end.")
+    return a_start < b_end and a_end > b_start
+
+
+def _find_conflicting_events(conn, event_date: str, start_time: str, end_time: str) -> list[sqlite3.Row]:
+    """Return sqlite3.Row objects for existing events that overlap with the proposed interval."""
+    rows = conn.execute(
+        "SELECT * FROM calendar_events WHERE event_date = ? ORDER BY start_time ASC",
+        (event_date,),
+    ).fetchall()
+    conflicts = []
+    for row in rows:
+        row_start = row["start_time"]
+        row_end = row["end_time"]
+        if not row_start or not row_end:
+            continue
+        if _intervals_overlap(start_time, end_time, row_start, row_end):
+            conflicts.append(row)
+    return conflicts
+
+
 @tool
 def get_calendar_events(start_date: str = "", end_date: str = "",
                          project_id: int = 0) -> str:
@@ -74,22 +118,64 @@ def get_upcoming_deadlines(days: int = 7) -> str:
 
 
 @tool
-def add_calendar_event(title: str, event_date: str, event_type: str = "deadline",
-                        project_id: int = 0) -> str:
+def add_calendar_event(
+    title: str,
+    event_date: str,
+    event_type: str = "deadline",
+    start_time: str = "09:00",
+    end_time: str = "09:30",
+    project_id: int = 0,
+    allow_overlap: bool = False,
+) -> str:
     """Add a calendar event. event_type: deadline, milestone, sprint_start, sprint_end."""
-    logger.info("Tool add_calendar_event called — title=%s, date=%s, type=%s, project=%s",
-                title[:100], event_date, event_type, project_id or "none")
+    logger.info("Tool add_calendar_event called — title=%s, date=%s, type=%s, time=%s-%s, project=%s, allow_overlap=%s",
+                title[:100], event_date, event_type, start_time, end_time, project_id or "none", allow_overlap)
     conn = get_db()
     try:
+        if not allow_overlap:
+            conflicts = _find_conflicting_events(conn, event_date, start_time, end_time)
+            if conflicts:
+                logger.info("add_calendar_event: overlap blocked for '%s' on %s", title, event_date)
+                conflict_list = ", ".join(
+                    f"{row['title']} ({row['start_time']} - {row['end_time']})"
+                    for row in conflicts
+                )
+                return (
+                    f"Cannot add '{title}' because it overlaps with: "
+                    + conflict_list
+                    + ". If you want to add it anyway, set allow_overlap=true."
+                )
         conn.execute(
-            "INSERT INTO calendar_events (title, event_date, event_type, project_id) VALUES (?, ?, ?, ?)",
-            (title, event_date, event_type, project_id or None),
+            "INSERT INTO calendar_events (title, event_date, start_time, end_time, event_type, project_id) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (title, event_date, start_time, end_time, event_type, project_id or None),
         )
         conn.commit()
-        logger.info("add_calendar_event: event '%s' added on %s", title, event_date)
-        return f"Calendar event '{title}' added on {event_date}."
+        logger.info("add_calendar_event: event '%s' added on %s %s-%s", title, event_date, start_time, end_time)
+        return f"Calendar event '{title}' added on {event_date} from {start_time} to {end_time}."
     finally:
         conn.close()
 
 
-calendar_tools = [get_calendar_events, get_upcoming_deadlines, add_calendar_event]
+@tool
+def check_calendar_overlap(event_date: str, start_time: str, end_time: str) -> str:
+    """Check whether a proposed calendar event overlaps with existing events on the same date."""
+    logger.info("Tool check_calendar_overlap called — date=%s, start=%s, end=%s",
+                event_date, start_time, end_time)
+    conn = get_db()
+    try:
+        conflicts = _find_conflicting_events(conn, event_date, start_time, end_time)
+        if not conflicts:
+            logger.info("check_calendar_overlap: no conflicts")
+            return "No overlaps found."
+        logger.info("check_calendar_overlap: %d conflicts", len(conflicts))
+        conflict_list = "\n".join(
+            f"- {row['title']} ({row['start_time']} - {row['end_time']})"
+            for row in conflicts
+        )
+        return "Overlap detected with existing events:\n" + conflict_list
+    finally:
+        conn.close()
+
+
+calendar_tools = [get_calendar_events, get_upcoming_deadlines, add_calendar_event, check_calendar_overlap]

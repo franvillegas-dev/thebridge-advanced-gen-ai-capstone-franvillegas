@@ -1,21 +1,25 @@
 "use client"
 
 import { useState, useRef, useCallback, createContext, useContext, useEffect } from "react"
+import { emitRefresh, type RefreshTarget } from "@/lib/events"
 
 export interface Message {
   role: "user" | "assistant"
   content: string
   agent?: string
   error?: boolean
+  createdEntity?: { type: "task" | "calendar_event"; data: unknown }
 }
 
 interface StreamEvent {
-  type: "start" | "agent" | "chunk" | "error" | "done" | "trace"
+  type: "start" | "agent" | "chunk" | "error" | "done" | "trace" | "response"
   agent?: string
   content?: string
   error?: string
   message?: string
   level?: string
+  created_entity?: { type: "task" | "calendar_event"; data: unknown }
+  refresh?: RefreshTarget[]
 }
 
 interface ChatContextValue {
@@ -50,6 +54,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const streamingRef = useRef("")
   const activeAgentRef = useRef<string | null>(null)
   const messagesRef = useRef<Message[]>([])
+  const pendingResponseRef = useRef<{ created_entity?: { type: "task" | "calendar_event"; data: unknown }; refresh?: RefreshTarget[] } | null>(null)
 
   useEffect(() => {
     messagesRef.current = messages
@@ -134,6 +139,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 console.log("[backend trace]", event.message.trim())
               }
               break
+            case "response":
+              if (event.agent) {
+                activeAgentRef.current = event.agent
+                setActiveAgent(event.agent)
+              }
+              if (event.content !== undefined) {
+                streamingRef.current = event.content
+                setStreamingContent(event.content)
+              }
+              if (event.created_entity || event.refresh) {
+                pendingResponseRef.current = {
+                  created_entity: event.created_entity,
+                  refresh: event.refresh,
+                }
+              }
+              break
           }
         }
       }
@@ -156,8 +177,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             role: "assistant",
             content: streamingRef.current,
             agent: activeAgentRef.current || undefined,
+            createdEntity: pendingResponseRef.current?.created_entity,
           },
         ])
+
+        if (pendingResponseRef.current?.refresh) {
+          pendingResponseRef.current.refresh.forEach((target) => emitRefresh(target))
+        }
       }
     } catch {
       const msg = "Lo siento, no pude conectar con el asistente. Verifica tu conexión e intenta de nuevo."
@@ -172,6 +198,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       setActiveAgent(null)
       streamingRef.current = ""
       activeAgentRef.current = null
+      pendingResponseRef.current = null
     }
   }, [])
 

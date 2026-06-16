@@ -11,11 +11,9 @@ from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate
 from ..tools.tasks_tools import tasks_tools
 from ..tools.calendar_tools import calendar_tools
 from .utils import extract_text
+from .prompts import CHAT_PROMPT
 
 logger = logging.getLogger("agile_agent.graph")
-
-CHAT_PROMPT = """You are a helpful AI assistant for an Agile project management system.
-Answer the user's question conversationally. Be concise and friendly."""
 
 all_tools = tasks_tools + calendar_tools
 tool_node = ToolNode(all_tools)

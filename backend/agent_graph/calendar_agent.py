@@ -4,13 +4,9 @@ from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate
 from ..tools.calendar_tools import calendar_tools
 from .state import AgentState
 from .utils import extract_text
+from .prompts import CALENDAR_AGENT_PROMPT
 
 logger = logging.getLogger("agile_agent.calendar_agent")
-
-CALENDAR_AGENT_PROMPT = """You are a calendar specialist. You help users:
-- View upcoming deadlines and milestones
-- Get sprint timelines
-- Add calendar events for tracking"""
 
 
 def create_calendar_agent():
