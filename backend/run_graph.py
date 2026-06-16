@@ -9,7 +9,7 @@ from backend.agent_graph.logging_config import configure_logging
 configure_logging()
 
 from backend.agent_graph.graph import graph
-from backend.agent_graph.utils import extract_text
+from backend.agent_graph.utils import extract_text, build_created_entity, get_refresh_targets
 from langchain_core.messages import HumanMessage, AIMessage
 
 logger = logging.getLogger("run_graph")
@@ -86,17 +86,40 @@ def main():
         result = graph.invoke(state)
         last_msg = result["messages"][-1]
 
+        last_tool_name = None
+        last_tool_result = None
+        for msg in reversed(result["messages"]):
+            if getattr(msg, "type", None) == "tool":
+                last_tool_name = getattr(msg, "name", None)
+                last_tool_result = getattr(msg, "content", None)
+                break
+
         output = extract_text(last_msg.content)
 
+        created_entity = None
+        refresh = []
+        if last_tool_name and isinstance(last_tool_result, str):
+            created_entity = build_created_entity(last_tool_name, last_tool_result)
+            refresh = get_refresh_targets(last_tool_name)
+
         final_agent = result.get("current_agent", "unknown")
+        response_payload = {
+            "content": output,
+            "agent": final_agent,
+            "created_entity": created_entity,
+            "refresh": refresh,
+        }
+
         logger.info(
-            "Graph completed — session_id=%s, final_agent=%s, output_length=%d",
+            "Graph completed — session_id=%s, final_agent=%s, output_length=%d, created_entity=%s, refresh=%s",
             session_id or "n/a",
             final_agent,
             len(output),
+            created_entity is not None,
+            refresh,
         )
         logger.debug("Assistant output: %s", output[:500])
-        print(json.dumps({"content": output, "agent": final_agent}), flush=True)
+        print(json.dumps(response_payload), flush=True)
     except Exception as e:
         logger.exception("Graph invocation failed — session_id=%s", session_id or "n/a")
         print(json.dumps({"error": str(e)}), flush=True)
