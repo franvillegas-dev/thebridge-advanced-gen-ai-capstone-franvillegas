@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { onRefresh } from "@/lib/events"
 import { KpiCard } from "./KpiCard"
 import { TaskCard } from "@/components/tasks/TaskCard"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -28,13 +29,25 @@ export function DashboardHome() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/tasks").then(r => r.json()),
-      fetch("/api/calendar").then(r => r.json()),
-    ]).then(([tasksData, eventsData]) => {
-      setTasks(tasksData)
-      setEvents(eventsData)
-    }).finally(() => setLoading(false))
+    const load = () => {
+      setLoading(true)
+      Promise.all([
+        fetch("/api/tasks").then(r => r.json()),
+        fetch("/api/calendar").then(r => r.json()),
+      ]).then(([tasksData, eventsData]) => {
+        setTasks(tasksData)
+        setEvents(eventsData)
+      }).finally(() => setLoading(false))
+    }
+    load()
+    const unsubTasks = onRefresh("tasks", load)
+    const unsubCalendar = onRefresh("calendar", load)
+    const unsubDashboard = onRefresh("dashboard", load)
+    return () => {
+      unsubTasks()
+      unsubCalendar()
+      unsubDashboard()
+    }
   }, [])
 
   const today = new Date().toISOString().split("T")[0]

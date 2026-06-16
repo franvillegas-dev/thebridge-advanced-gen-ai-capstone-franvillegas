@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { onRefresh } from "@/lib/events"
 import { TaskCard } from "./TaskCard"
 
 interface Task {
@@ -16,10 +17,15 @@ export function TaskList() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/tasks")
-      .then((res) => res.json())
-      .then((data) => setTasks(data.tasks))
-      .finally(() => setLoading(false))
+    const load = () => {
+      setLoading(true)
+      fetch("/api/tasks")
+        .then((res) => res.json())
+        .then((data) => setTasks(data.tasks))
+        .finally(() => setLoading(false))
+    }
+    load()
+    return onRefresh("tasks", load)
   }, [])
 
   if (loading) return <div className="p-4">Loading tasks...</div>
