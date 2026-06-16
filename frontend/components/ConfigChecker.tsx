@@ -9,11 +9,11 @@ export function ConfigChecker() {
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
-      .then((data: { openai: boolean; jira: boolean }) => {
-        if (!data.openai) {
+      .then((data: { google: boolean; jira: boolean }) => {
+        if (!data.google) {
           toast({
-            title: "OpenAI API key not configured",
-            description: "Set OPENAI_API_KEY in backend/.env for the AI assistant to work.",
+            title: "Google AI API key not configured",
+            description: "Set GOOGLE_API_KEY in backend/.env for the AI assistant to work.",
             variant: "destructive",
           })
         }

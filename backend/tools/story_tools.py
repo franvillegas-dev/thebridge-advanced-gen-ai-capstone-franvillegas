@@ -1,11 +1,11 @@
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 @tool
 def refine_story(description: str) -> str:
     """Refine a user story description into a well-structured format with acceptance criteria."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     prompt = f"""Refine this user story into a structured format:
 
 Raw description: {description}
@@ -26,7 +26,7 @@ As a [user], I want [goal] so that [benefit].
 @tool
 def split_story(story_text: str) -> str:
     """Split a large user story into smaller, independent sub-stories."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     prompt = f"""Split this user story into smaller independent stories:
 
 {story_text}
@@ -40,7 +40,7 @@ Return each sub-story as:
 @tool
 def estimate_effort(story_text: str) -> str:
     """Estimate effort for a user story in story points (Fibonacci: 1, 2, 3, 5, 8, 13)."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
     prompt = f"""Estimate the effort for this user story in Fibonacci story points (1, 2, 3, 5, 8, 13):
 
 {story_text}

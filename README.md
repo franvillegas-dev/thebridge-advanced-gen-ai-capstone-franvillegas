@@ -19,7 +19,7 @@ El flujo comienza en el chat del frontend, que envía el mensaje a una API Route
 | Capa | Tecnología |
 |---|---|
 | Frontend | Next.js 16, TypeScript, React 19, Tailwind CSS v4, shadcn/ui |
-| Agentes | LangGraph, LangChain, GPT-4o-mini |
+| Agentes | LangGraph, LangChain, Gemini 2.0 Flash |
 | Integración Jira | MCP (primario) / REST API (fallback) |
 | Base de datos | SQLite via Drizzle ORM |
 | Streaming | Server-Sent Events (SSE) |
@@ -34,7 +34,7 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # configurar credenciales Jira y OpenAI
+cp .env.example .env   # configurar credenciales Jira y Google AI
 ```
 
 ### Frontend
@@ -50,14 +50,14 @@ El backend se ejecuta automáticamente como subproceso desde Next.js al enviar u
 
 ### Variables de entorno
 
-Las credenciales sensibles (Jira, OpenAI) se configuran en `backend/.env`:
+Las credenciales sensibles (Jira, Google AI) se configuran en `backend/.env`:
 
 ```
 JIRA_URL=https://tu-dominio.atlassian.net
 JIRA_EMAIL=tu-email@example.com
 JIRA_API_TOKEN=tu-token
 JIRA_MCP_SERVER=              # opcional: URL del MCP server
-OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=your-google-api-key
 DATABASE_URL=file:./frontend/drizzle/data.db
 ```
 
@@ -104,7 +104,7 @@ El frontend solo necesita `DATABASE_URL` en `frontend/.env.local` para la base S
 
 | Agente | Función | Herramientas |
 |---|---|---|
-| **Supervisor** | Router LLM — clasifica el mensaje y deriva al agente correcto | GPT-4o-mini |
+| **Supervisor** | Router LLM — clasifica el mensaje y deriva al agente correcto | Gemini 2.0 Flash |
 | **Jira Agent** | CRUD de issues, búsquedas JQL, reportes de sprint | `search`, `get`, `create`, `update` via MCP o REST |
 | **Tasks Agent** | Tareas locales con opción de publicación a Jira | `CRUD` + `publish_to_jira` |
 | **Calendar Agent** | Eventos, deadlines, milestones, sprints | `get_events`, `get_deadlines`, `add_event` |

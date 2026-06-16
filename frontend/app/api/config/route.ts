@@ -16,12 +16,12 @@ try:
 except ImportError:
     pass
 
-openai_key = bool(os.getenv("OPENAI_API_KEY"))
+google_key = bool(os.getenv("GOOGLE_API_KEY"))
 jira_url = bool(os.getenv("JIRA_URL"))
 jira_email = bool(os.getenv("JIRA_EMAIL"))
 jira_token = bool(os.getenv("JIRA_API_TOKEN"))
 
-print(f"openai={openai_key},jira={jira_url and jira_email and jira_token}")
+print(f"google={google_key},jira={jira_url and jira_email and jira_token}")
         `,
       ], {
         cwd: path.join(process.cwd(), ".."),
@@ -33,11 +33,11 @@ print(f"openai={openai_key},jira={jira_url and jira_email and jira_token}")
       python.stderr.on("data", (data: Buffer) => { console.error(data.toString()) })
     })
 
-    const openai = result.includes("openai=True")
+    const google = result.includes("google=True")
     const jira = result.includes("jira=True")
 
-    return NextResponse.json({ openai, jira })
+    return NextResponse.json({ google, jira })
   } catch {
-    return NextResponse.json({ openai: false, jira: false })
+    return NextResponse.json({ google: false, jira: false })
   }
 }
