@@ -43,6 +43,7 @@ export function ChatPanel() {
               content={msg.content}
               agent={msg.agent}
               error={msg.error}
+              createdEntity={msg.createdEntity}
             />
           ))}
           {streamingContent && (

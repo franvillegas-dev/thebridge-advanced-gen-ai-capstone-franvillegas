@@ -1,15 +1,17 @@
 import { cn } from "@/lib/utils"
 import { AlertCircle } from "lucide-react"
 import { getAgentLabel } from "./ChatContext"
+import { CreatedEntityCard } from "./CreatedEntityCard"
 
 interface ChatMessageProps {
   role: "user" | "assistant"
   content: string
   agent?: string
   error?: boolean
+  createdEntity?: { type: "task" | "calendar_event"; data: any }
 }
 
-export function ChatMessage({ role, content, agent, error }: ChatMessageProps) {
+export function ChatMessage({ role, content, agent, error, createdEntity }: ChatMessageProps) {
   return (
     <div className={`flex ${role === "user" ? "justify-end" : "justify-start"} mb-4`}>
       <div className="max-w-[80%]">
@@ -38,6 +40,7 @@ export function ChatMessage({ role, content, agent, error }: ChatMessageProps) {
           <div className="flex items-start gap-2">
             {error && <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />}
             <p className="whitespace-pre-wrap">{content}</p>
+            {createdEntity && <CreatedEntityCard entity={createdEntity} />}
           </div>
         </div>
       </div>
