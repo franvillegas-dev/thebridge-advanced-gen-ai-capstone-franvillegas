@@ -1725,7 +1725,92 @@ git commit -m "feat: forward pending_action to chat runner"
 
 ---
 
-### Task 22: Run full integration check
+### Task 22: Add frontend card tests
+
+**Files:**
+- Modify: `frontend/package.json`
+- Create: `frontend/vitest.config.ts`
+- Create: `frontend/components/chat/__tests__/CreatedCards.test.tsx`
+
+- [ ] **Step 1: Install vitest and testing library**
+
+```bash
+cd frontend && npm install --save-dev vitest @vitejs/plugin-react @testing-library/react @testing-library/jest-dom jsdom
+```
+
+- [ ] **Step 2: Add test script**
+
+In `frontend/package.json` scripts:
+
+```json
+"test": "vitest run"
+```
+
+- [ ] **Step 3: Create vitest config**
+
+```tsx
+// frontend/vitest.config.ts
+import { defineConfig } from "vitest/config"
+import react from "@vitejs/plugin-react"
+import path from "path"
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    globals: true,
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./"),
+    },
+  },
+})
+```
+
+- [ ] **Step 4: Write card tests**
+
+```tsx
+// frontend/components/chat/__tests__/CreatedCards.test.tsx
+import { describe, it, expect } from "vitest"
+import { render, screen } from "@testing-library/react"
+import { CreatedTaskCard } from "../CreatedTaskCard"
+import { CreatedEventCard } from "../CreatedEventCard"
+
+describe("Created cards", () => {
+  it("renders task card with details", () => {
+    render(<CreatedTaskCard data={{ title: "Test task", priority: "high", status: "pending", due_date: "2026-06-20" }} />)
+    expect(screen.getByText("Test task")).toBeDefined()
+    expect(screen.getByText("high")).toBeDefined()
+    expect(screen.getByText("2026-06-20")).toBeDefined()
+  })
+
+  it("renders event card with time range", () => {
+    render(<CreatedEventCard data={{ title: "Standup", event_date: "2026-06-20", event_type: "milestone", start_time: "10:00", end_time: "10:30" }} />)
+    expect(screen.getByText("Standup")).toBeDefined()
+    expect(screen.getByText("10:00 - 10:30")).toBeDefined()
+  })
+})
+```
+
+- [ ] **Step 5: Run tests**
+
+```bash
+cd frontend && npm test
+```
+
+Expected: 2 tests pass.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add frontend/package.json frontend/vitest.config.ts frontend/components/chat/__tests__/
+git commit -m "test: add vitest and created card smoke tests"
+```
+
+---
+
+### Task 23: Run full integration check
 
 **Files:**
 - None (verification only)
@@ -1778,6 +1863,7 @@ git commit -m "fix: integration adjustments"
   - Selective view refresh → Tasks 13-15, 19.
   - Multi-turn questions → Tasks 5-6, 16, 20-21.
   - Calendar overlap detection → Task 3, Task 7, Task 20.
-  - Tests → Task 11.
+  - Backend tests → Task 11.
+  - Frontend card tests → Task 22.
 - **Placeholder scan:** No TBD/TODO or vague steps found.
 - **Type consistency:** `ChatAction` fields match usage across Context, Message, ChatPanel, and run_graph payloads.
