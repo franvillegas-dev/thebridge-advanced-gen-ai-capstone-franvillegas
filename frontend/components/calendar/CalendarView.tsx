@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { onRefresh } from "@/lib/events"
 import { GlassCard } from "@/components/ui/glass-card"
 import { CalendarDays } from "lucide-react"
 
@@ -16,12 +17,21 @@ export function CalendarView() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const loadEvents = useCallback(() => {
+    setLoading(true)
     fetch("/api/calendar")
       .then((res) => res.json())
       .then((data) => setEvents(data.events))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    loadEvents()
+  }, [loadEvents])
+
+  useEffect(() => {
+    return onRefresh("calendar", loadEvents)
+  }, [loadEvents])
 
   const grouped = events.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
     const key = event.eventDate
