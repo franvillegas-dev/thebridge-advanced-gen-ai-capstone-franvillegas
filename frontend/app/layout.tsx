@@ -25,11 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-background font-sans antialiased">
         <ToastProvider>
           <ChatProvider>
+            <Header />
             <SidebarMobile />
             <SidebarDesktop />
-            <div className="md:ml-56 pb-16 md:pb-0 md:mr-[400px]">
+            <div className="pt-14 md:ml-56 pb-16 md:pb-0 md:mr-[400px]">
               <main className="p-6 max-w-5xl mx-auto space-y-8">
-                <Header />
                 {children}
               </main>
             </div>

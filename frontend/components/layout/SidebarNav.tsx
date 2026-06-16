@@ -15,7 +15,7 @@ export function SidebarDesktop() {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex fixed left-0 top-0 bottom-0 w-56 flex-col z-30 border-r border-border/40 bg-background/80 p-4 pt-6 backdrop-blur-xl">
+    <aside className="hidden md:flex fixed left-0 top-14 bottom-0 w-56 flex-col z-30 border-r border-border/40 bg-background/80 p-4 backdrop-blur-xl">
       <nav className="space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
