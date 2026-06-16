@@ -42,13 +42,17 @@ def create_task(title: str, description: str = "", priority: str = "medium",
     """Create a new local task. Priority: low, medium, high, critical."""
     logger.info("Tool create_task called — title=%s, priority=%s, due=%s, project=%s",
                 title[:100], priority, due_date or "none", project_id)
-    _exec(
-        "INSERT INTO local_tasks (title, description, status, priority, due_date, project_id) "
-        "VALUES (?, ?, 'pending', ?, ?, ?)",
-        (title, description, priority, due_date or None, project_id or None),
-    )
-    result = _fetch("SELECT last_insert_rowid() as id")
-    task_id = result[0]["id"]
+    conn = get_db()
+    try:
+        cur = conn.execute(
+            "INSERT INTO local_tasks (title, description, status, priority, due_date, project_id) "
+            "VALUES (?, ?, 'pending', ?, ?, ?)",
+            (title, description, priority, due_date or None, project_id or None),
+        )
+        conn.commit()
+        task_id = cur.lastrowid
+    finally:
+        conn.close()
     logger.info("create_task: created task id=%d", task_id)
     return f"Task created with id {task_id}"
 

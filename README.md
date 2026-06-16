@@ -17,7 +17,7 @@ El flujo comienza en el chat del frontend, que envía el mensaje a una API Route
 | Capa | Tecnología |
 |---|---|
 | Frontend | Next.js 16, TypeScript, React 19, Tailwind CSS v4, shadcn/ui |
-| Agentes | LangGraph, LangChain, Gemini 2.0 Flash |
+| Agentes | LangGraph, LangChain, Gemini 2.5 Flash |
 | Base de datos | SQLite via Drizzle ORM |
 | Streaming | Server-Sent Events (SSE) |
 | Contenerización | Docker Compose |
@@ -121,7 +121,7 @@ El frontend solo necesita `DATABASE_URL` en `frontend/.env.local` para la base S
 
 | Agente | Función | Herramientas |
 |---|---|---|
-| **Supervisor** | Router LLM — clasifica el mensaje y deriva al agente correcto | Gemini 2.0 Flash |
+| **Supervisor** | Router LLM — clasifica el mensaje y deriva al agente correcto | Gemini 2.5 Flash |
 | **Tasks Agent** | Crear, listar, actualizar y eliminar tareas locales | `create_task`, `list_tasks`, `update_task`, `delete_task` |
 | **Calendar Agent** | Eventos, deadlines, milestones | `get_calendar_events`, `get_upcoming_deadlines`, `add_calendar_event` |
 

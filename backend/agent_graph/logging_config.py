@@ -65,7 +65,6 @@ def configure_logging(level: str | None = None) -> None:
     root.handlers = [handler]
 
     # Reduce noise from third-party libraries while keeping our own logs visible.
-    logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
