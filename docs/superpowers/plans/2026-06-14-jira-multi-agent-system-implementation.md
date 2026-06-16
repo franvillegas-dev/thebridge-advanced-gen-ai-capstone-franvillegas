@@ -270,7 +270,7 @@ class AgentState(TypedDict):
 
 ```python
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 SUPERVISOR_PROMPT = """You are a supervisor agent for a Jira project management system.
 Route the user's message to the most appropriate specialist agent:
@@ -285,7 +285,7 @@ Respond with ONLY the agent name: jira_agent, tasks_agent, calendar_agent, story
 
 
 def create_supervisor_chain():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return SUPERVISOR_PROMPT | llm
 
 
@@ -553,7 +553,7 @@ jira_tools = [search_issues, get_issue, create_jira_issue, update_jira_issue]
 
 ```python
 from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.jira_tools import jira_tools
 from .state import AgentState
 
@@ -567,7 +567,7 @@ Use the available tools to interact with Jira. Always confirm before destructive
 
 
 def create_jira_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(jira_tools)
 
 
@@ -738,7 +738,7 @@ tasks_tools = [create_task, list_tasks, update_task, delete_task, publish_task_t
 
 ```python
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.tasks_tools import tasks_tools
 from .state import AgentState
 
@@ -751,7 +751,7 @@ Local tasks are private to this system until published to Jira."""
 
 
 def create_tasks_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(tasks_tools)
 
 
@@ -858,7 +858,7 @@ calendar_tools = [get_calendar_events, get_upcoming_deadlines, add_calendar_even
 
 ```python
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.calendar_tools import calendar_tools
 from .state import AgentState
 
@@ -869,7 +869,7 @@ CALENDAR_AGENT_PROMPT = """You are a calendar specialist. You help users:
 
 
 def create_calendar_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(calendar_tools)
 
 
@@ -900,13 +900,13 @@ git commit -m "agents: calendar agent with events tools"
 
 ```python
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 @tool
 def refine_story(description: str) -> str:
     """Refine a user story description into a well-structured format with acceptance criteria."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     prompt = f"""Refine this user story into a structured format:
 
 Raw description: {description}
@@ -928,7 +928,7 @@ As a [user], I want [goal] so that [benefit].
 @tool
 def split_story(story_text: str) -> str:
     """Split a large user story into smaller, independent sub-stories."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.3)
     prompt = f"""Split this user story into smaller independent stories:
 
 {story_text}
@@ -942,7 +942,7 @@ Return each sub-story as:
 @tool
 def estimate_effort(story_text: str) -> str:
     """Estimate effort for a user story in story points (Fibonacci: 1, 2, 3, 5, 8, 13)."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
     prompt = f"""Estimate the effort for this user story in Fibonacci story points (1, 2, 3, 5, 8, 13):
 
 {story_text}
@@ -960,7 +960,7 @@ story_tools = [refine_story, split_story, estimate_effort]
 
 ```python
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.story_tools import story_tools
 from .state import AgentState
 
@@ -971,7 +971,7 @@ STORY_AGENT_PROMPT = """You are a story refinement specialist. You help users:
 
 
 def create_story_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(story_tools)
 
 
@@ -1922,7 +1922,7 @@ JIRA_URL=https://your-domain.atlassian.net
 JIRA_EMAIL=your-email@example.com
 JIRA_API_TOKEN=your-token
 JIRA_MCP_SERVER=
-OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=your-google-api-key
 ```
 
 - [ ] **Step 3: Commit**

@@ -6,7 +6,7 @@
 
 **Architecture:** Layout becomes 3-column grid (nav | main | chat panel). Chat state lives in React Context to survive navigation. Backend agents wrap LLM/Jira calls in try/except returning user-friendly errors. Toast notifications show on config validation failure.
 
-**Tech Stack:** Next.js 16, React 19, Tailwind v4, shadcn/ui, LangGraph, LangChain, OpenAI
+**Tech Stack:** Next.js 16, React 19, Tailwind v4, shadcn/ui, LangGraph, LangChain, Gemini 2.0 Flash
 
 ---
 
@@ -551,12 +551,12 @@ try:
 except ImportError:
     pass
 
-openai_key = bool(os.getenv("OPENAI_API_KEY"))
+google_key = bool(os.getenv("GOOGLE_API_KEY"))
 jira_url = bool(os.getenv("JIRA_URL"))
 jira_email = bool(os.getenv("JIRA_EMAIL"))
 jira_token = bool(os.getenv("JIRA_API_TOKEN"))
 
-print(f"openai={openai_key},jira={jira_url and jira_email and jira_token}")
+print(f"google={google_key},jira={jira_url and jira_email and jira_token}")
         `,
       ], {
         cwd: path.join(process.cwd(), ".."),
@@ -568,12 +568,12 @@ print(f"openai={openai_key},jira={jira_url and jira_email and jira_token}")
       python.stderr.on("data", (data: Buffer) => { console.error(data.toString()) })
     })
 
-    const openai = result.includes("openai=True")
+    const google = result.includes("google=True")
     const jira = result.includes("jira=True")
 
-    return NextResponse.json({ openai, jira })
+    return NextResponse.json({ google, jira })
   } catch {
-    return NextResponse.json({ openai: false, jira: false })
+    return NextResponse.json({ google: false, jira: false })
   }
 }
 ```
@@ -595,11 +595,11 @@ export function ConfigChecker() {
   useEffect(() => {
     fetch("/api/config")
       .then((r) => r.json())
-      .then((data: { openai: boolean; jira: boolean }) => {
-        if (!data.openai) {
+      .then((data: { google: boolean; jira: boolean }) => {
+        if (!data.google) {
           toast({
-            title: "OpenAI API key not configured",
-            description: "Set OPENAI_API_KEY in backend/.env for the AI assistant to work.",
+            title: "Google AI API key not configured",
+            description: "Set GOOGLE_API_KEY in backend/.env for the AI assistant to work.",
             variant: "destructive",
           })
         }
@@ -741,7 +741,7 @@ def search_issues(jql: str, max_results: int = 20) -> str:
 
 Apply the same try/except pattern to `get_issue`, `create_jira_issue`, and `update_jira_issue`.
 
-- [ ] **Step 3: Wrap supervisor OpenAI call**
+- [ ] **Step 3: Wrap supervisor Gemini call**
 
 ```python
 # backend/agent_graph/supervisor.py
@@ -757,7 +757,7 @@ def route_to_agent(state: AgentState) -> str:
     return agent_name if agent_name in valid_agents else "chat"
 ```
 
-- [ ] **Step 4: Wrap agent OpenAI calls (jira_agent, story_agent, tasks_agent, calendar_agent)**
+- [ ] **Step 4: Wrap agent Gemini calls (jira_agent, story_agent, tasks_agent, calendar_agent)**
 
 In each agent file, wrap the `response = agent.invoke(...)` call:
 
@@ -775,7 +775,7 @@ def handle_jira(state: AgentState) -> AgentState:
         return {
             **state,
             "messages": state["messages"] + [
-                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que OPENAI_API_KEY esté configurada correctamente en backend/.env")
+                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que GOOGLE_API_KEY esté configurada correctamente en backend/.env")
             ],
         }
 ```

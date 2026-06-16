@@ -50,11 +50,11 @@
 | `frontend/components/chat/ChatContext.tsx` | **New.** React Context for chat state (messages, streaming, session). |
 | `frontend/components/ui/toast.tsx` | **New.** Toast component + provider. |
 | `frontend/app/api/chat/route.ts` | Add config validation endpoint + structured error responses. |
-| `backend/agent_graph/jira_agent.py` | Wrap OpenAI/Jira calls in try/except, return error string. |
+| `backend/agent_graph/jira_agent.py` | Wrap Gemini/Jira calls in try/except, return error string. |
 | `backend/agent_graph/story_agent.py` | Same. |
 | `backend/agent_graph/tasks_agent.py` | Same. |
 | `backend/agent_graph/calendar_agent.py` | Same. |
-| `backend/agent_graph/supervisor.py` | Wrap OpenAI call in try/except. |
+| `backend/agent_graph/supervisor.py` | Wrap Gemini call in try/except. |
 | `backend/tools/jira_tools.py` | Wrap async calls, return error string on failure. |
 | `backend/mcp/jira_mcp_client.py` | Add try/except around all HTTP calls, return dict with `error` key. |
 
@@ -103,7 +103,7 @@ try:
     response = agent.invoke([system_msg] + messages)
 except Exception as e:
     return {**state, "messages": state["messages"] + [
-        AIMessage(content=f"Error: Could not connect to OpenAI. Check your API key in backend/.env")
+        AIMessage(content=f"Error: Could not connect to Google AI. Check your API key in backend/.env")
     ]}
 ```
 
@@ -117,7 +117,7 @@ except Exception as e:
 
 #### Config errors → toasts on app load
 - Frontend calls `/api/health` or `/api/chat/config` on mount
-- Backend returns config status (Jira configured? OpenAI key set?)
+- Backend returns config status (Jira configured? Google AI key set?)
 - If missing, show toast via shadcn toast provider
 
 ## Data Flow
@@ -131,8 +131,8 @@ User sends chat message
   └─→ POST /api/chat (SSE stream)
        └─→ spawn python3 subprocess
             └─→ LangGraph graph.invoke()
-                 ├─→ supervisor (OpenAI) → agent
-                 ├─→ agent (OpenAI + Jira/Local tools)
+                 ├─→ supervisor (Gemini) → agent
+                 ├─→ agent (Gemini + Jira/Local tools)
                  └─→ response streamed back via SSE
 
 Error during chat
@@ -140,7 +140,7 @@ Error during chat
        └─→ Frontend renders as assistant message in chat panel
 
 Config validation
-  └─→ GET /api/chat/config returns { openai: bool, jira: bool }
+  └─→ GET /api/chat/config returns { google: bool, jira: bool }
        └─→ Frontend shows toast per missing config
 ```
 
