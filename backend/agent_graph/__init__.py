@@ -1,11 +1,9 @@
 import os
 import logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+from .logging_config import configure_logging
+
+configure_logging()
 
 try:
     from dotenv import load_dotenv
@@ -14,4 +12,4 @@ except ImportError:
     pass
 
 logger = logging.getLogger("agile_agent")
-logger.info("Backend package initialized")
+logger.info("Backend package initialized — logging configured")
