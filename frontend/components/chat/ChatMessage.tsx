@@ -8,6 +8,7 @@ interface ChatMessageProps {
   content: string
   agent?: string
   error?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   createdEntity?: { type: "task" | "calendar_event"; data: any }
 }
 

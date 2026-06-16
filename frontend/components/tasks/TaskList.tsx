@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { onRefresh } from "@/lib/events"
 import { TaskCard } from "./TaskCard"
 
@@ -16,21 +16,17 @@ export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadTasks = useCallback(() => {
-    setLoading(true)
-    fetch("/api/tasks")
-      .then((res) => res.json())
-      .then((data) => setTasks(data.tasks))
-      .finally(() => setLoading(false))
+  useEffect(() => {
+    const load = () => {
+      setLoading(true)
+      fetch("/api/tasks")
+        .then((res) => res.json())
+        .then((data) => setTasks(data.tasks))
+        .finally(() => setLoading(false))
+    }
+    load()
+    return onRefresh("tasks", load)
   }, [])
-
-  useEffect(() => {
-    loadTasks()
-  }, [loadTasks])
-
-  useEffect(() => {
-    return onRefresh("tasks", loadTasks)
-  }, [loadTasks])
 
   if (loading) return <div className="p-4">Loading tasks...</div>
 

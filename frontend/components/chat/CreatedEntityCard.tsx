@@ -1,8 +1,11 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EntityData = any
+
 interface CreatedEntityCardProps {
-  entity: { type: "task" | "calendar_event"; data: any }
+  entity: { type: "task" | "calendar_event"; data: EntityData }
 }
 
 export function CreatedEntityCard({ entity }: CreatedEntityCardProps) {

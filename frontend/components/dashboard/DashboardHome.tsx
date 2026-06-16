@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { onRefresh } from "@/lib/events"
 import { KpiCard } from "./KpiCard"
 import { TaskCard } from "@/components/tasks/TaskCard"
@@ -28,31 +28,27 @@ export function DashboardHome() {
   const [events, setEvents] = useState<{ events: CalendarEvent[] }>({ events: [] })
   const [loading, setLoading] = useState(true)
 
-  const loadData = useCallback(() => {
-    setLoading(true)
-    Promise.all([
-      fetch("/api/tasks").then(r => r.json()),
-      fetch("/api/calendar").then(r => r.json()),
-    ]).then(([tasksData, eventsData]) => {
-      setTasks(tasksData)
-      setEvents(eventsData)
-    }).finally(() => setLoading(false))
-  }, [])
-
   useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  useEffect(() => {
-    const unsubTasks = onRefresh("tasks", loadData)
-    const unsubCalendar = onRefresh("calendar", loadData)
-    const unsubDashboard = onRefresh("dashboard", loadData)
+    const load = () => {
+      setLoading(true)
+      Promise.all([
+        fetch("/api/tasks").then(r => r.json()),
+        fetch("/api/calendar").then(r => r.json()),
+      ]).then(([tasksData, eventsData]) => {
+        setTasks(tasksData)
+        setEvents(eventsData)
+      }).finally(() => setLoading(false))
+    }
+    load()
+    const unsubTasks = onRefresh("tasks", load)
+    const unsubCalendar = onRefresh("calendar", load)
+    const unsubDashboard = onRefresh("dashboard", load)
     return () => {
       unsubTasks()
       unsubCalendar()
       unsubDashboard()
     }
-  }, [loadData])
+  }, [])
 
   const today = new Date().toISOString().split("T")[0]
 
