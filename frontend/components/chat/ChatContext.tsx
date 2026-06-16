@@ -11,13 +11,6 @@ export interface Message {
   createdEntity?: { type: "task" | "calendar_event"; data: unknown }
 }
 
-interface ChatResponse {
-  content: string
-  agent: string
-  created_entity?: { type: "task" | "calendar_event"; data: unknown }
-  refresh?: RefreshTarget[]
-}
-
 interface StreamEvent {
   type: "start" | "agent" | "chunk" | "error" | "done" | "trace" | "response"
   agent?: string
@@ -25,6 +18,8 @@ interface StreamEvent {
   error?: string
   message?: string
   level?: string
+  created_entity?: { type: "task" | "calendar_event"; data: unknown }
+  refresh?: RefreshTarget[]
 }
 
 interface ChatContextValue {
@@ -145,15 +140,18 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
               }
               break
             case "response":
+              if (event.agent) {
+                activeAgentRef.current = event.agent
+                setActiveAgent(event.agent)
+              }
               if (event.content !== undefined) {
                 streamingRef.current = event.content
                 setStreamingContent(event.content)
               }
-              const respPayload = event as unknown as ChatResponse
-              if (respPayload.created_entity || respPayload.refresh) {
+              if (event.created_entity || event.refresh) {
                 pendingResponseRef.current = {
-                  created_entity: respPayload.created_entity,
-                  refresh: respPayload.refresh,
+                  created_entity: event.created_entity,
+                  refresh: event.refresh,
                 }
               }
               break
