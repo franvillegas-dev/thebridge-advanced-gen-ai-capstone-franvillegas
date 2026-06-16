@@ -8,6 +8,13 @@
       "when": 1781629168454,
       "tag": "0000_demonic_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781639359797,
+      "tag": "0001_boring_marten_broadcloak",
+      "breakpoints": true
     }
   ]
 }
