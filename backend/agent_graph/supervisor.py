@@ -1,6 +1,9 @@
+import logging
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 from .state import AgentState
+
+logger = logging.getLogger("agile_agent.supervisor")
 
 SUPERVISOR_PROMPT = """You are a supervisor agent for a Jira project management system.
 Route the user's message to the most appropriate specialist agent:
@@ -24,10 +27,16 @@ _supervisor_chain = _prompt | _llm
 def route_to_agent(state: AgentState) -> str:
     messages = state["messages"]
     last_message = messages[-1].content if messages else ""
+    logger.info("Routing message: %s", last_message[:120])
     try:
         response = _supervisor_chain.invoke({"input": last_message})
         agent_name = response.content.strip().lower()
-    except Exception:
+        logger.info("Supervisor routed to: %s", agent_name)
+    except Exception as e:
+        logger.error("Supervisor error: %s — falling back to chat", e)
         return "chat"
     valid_agents = {"jira_agent", "tasks_agent", "calendar_agent", "story_agent", "chat"}
-    return agent_name if agent_name in valid_agents else "chat"
+    if agent_name not in valid_agents:
+        logger.warning("Supervisor returned invalid agent: %s — falling back to chat", agent_name)
+        return "chat"
+    return agent_name

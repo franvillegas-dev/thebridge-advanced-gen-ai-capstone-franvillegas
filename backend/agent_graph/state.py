@@ -1,5 +1,8 @@
+import logging
 from typing import TypedDict, List, Optional, Any
 from langchain_core.messages import AnyMessage
+
+logger = logging.getLogger("agile_agent.state")
 
 
 class AgentState(TypedDict):
