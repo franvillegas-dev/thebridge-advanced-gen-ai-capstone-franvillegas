@@ -41,8 +41,8 @@ export function ChatMessage({ role, content, agent, error, createdEntity }: Chat
           <div className="flex items-start gap-2">
             {error && <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />}
             <p className="whitespace-pre-wrap">{content}</p>
-            {createdEntity && <CreatedEntityCard entity={createdEntity} />}
           </div>
+          {createdEntity && <CreatedEntityCard entity={createdEntity} />}
         </div>
       </div>
     </div>
