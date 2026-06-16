@@ -43,8 +43,8 @@ def create_task(title: str, description: str = "", priority: str = "medium",
     logger.info("Tool create_task called — title=%s, priority=%s, due=%s, project=%s",
                 title[:100], priority, due_date or "none", project_id)
     _exec(
-        "INSERT INTO local_tasks (title, description, status, priority, due_date, project_id, synced) "
-        "VALUES (?, ?, 'pending', ?, ?, ?, 0)",
+        "INSERT INTO local_tasks (title, description, status, priority, due_date, project_id) "
+        "VALUES (?, ?, 'pending', ?, ?, ?)",
         (title, description, priority, due_date or None, project_id or None),
     )
     result = _fetch("SELECT last_insert_rowid() as id")
@@ -73,8 +73,7 @@ def list_tasks(status: str = "", project_id: int = 0) -> str:
     logger.info("list_tasks: %d tasks returned", len(rows))
     lines = []
     for row in rows:
-        sync_status = " (published)" if row["synced"] else " (local)"
-        lines.append(f"- [{row['id']}] {row['title']} [{row['status']}/{row['priority']}]{sync_status}")
+        lines.append(f"- [{row['id']}] {row['title']} [{row['status']}/{row['priority']}]")
         if row["due_date"]:
             lines[-1] += f" due: {row['due_date']}"
     return "\n".join(lines)

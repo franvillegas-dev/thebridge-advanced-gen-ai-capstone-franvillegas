@@ -51,7 +51,7 @@ export function ChatPanel() {
           {isLoading && !streamingContent && <ChatLoadingIndicator agent={activeAgent} />}
           {messages.length === 0 && !streamingContent && !isLoading && (
             <p className="text-sm text-muted-foreground text-center mt-8">
-              Ask me about your projects, tasks, or Jira issues.
+              Ask me about your tasks or calendar events.
             </p>
           )}
         </div>
