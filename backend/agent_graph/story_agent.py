@@ -1,5 +1,5 @@
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.story_tools import story_tools
 from .state import AgentState
 
@@ -10,7 +10,7 @@ STORY_AGENT_PROMPT = """You are a story refinement specialist. You help users:
 
 
 def create_story_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(story_tools)
 
 
@@ -26,6 +26,6 @@ def handle_story(state: AgentState) -> AgentState:
         return {
             **state,
             "messages": state["messages"] + [
-                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que OPENAI_API_KEY esté configurada correctamente en backend/.env")
+                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que GOOGLE_API_KEY esté configurada correctamente en backend/.env")
             ],
         }

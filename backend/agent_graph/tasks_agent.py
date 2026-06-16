@@ -1,5 +1,5 @@
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.tasks_tools import tasks_tools
 from .state import AgentState
 
@@ -12,7 +12,7 @@ Local tasks are private to this system until published to Jira."""
 
 
 def create_tasks_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(tasks_tools)
 
 
@@ -28,6 +28,6 @@ def handle_tasks(state: AgentState) -> AgentState:
         return {
             **state,
             "messages": state["messages"] + [
-                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que OPENAI_API_KEY esté configurada correctamente en backend/.env")
+                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que GOOGLE_API_KEY esté configurada correctamente en backend/.env")
             ],
         }

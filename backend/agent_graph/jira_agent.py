@@ -1,5 +1,5 @@
 from langchain_core.messages import SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from ..tools.jira_tools import jira_tools
 from .state import AgentState
 
@@ -13,7 +13,7 @@ Use the available tools to interact with Jira. Always confirm before destructive
 
 
 def create_jira_agent():
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
     return llm.bind_tools(jira_tools)
 
 
@@ -29,6 +29,6 @@ def handle_jira(state: AgentState) -> AgentState:
         return {
             **state,
             "messages": state["messages"] + [
-                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que OPENAI_API_KEY esté configurada correctamente en backend/.env")
+                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que GOOGLE_API_KEY esté configurada correctamente en backend/.env")
             ],
         }
