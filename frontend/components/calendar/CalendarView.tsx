@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { GlassCard } from "@/components/ui/glass-card"
+import { CalendarDays } from "lucide-react"
 
 interface CalendarEvent {
   id: number
@@ -29,33 +30,33 @@ export function CalendarView() {
     return acc
   }, {})
 
-  if (loading) return <div className="p-4">Loading calendar...</div>
+  if (loading) return <p className="text-sm text-muted-foreground">Loading calendar...</p>
+
+  if (events.length === 0) return <p className="text-sm text-muted-foreground">No calendar events.</p>
 
   return (
     <div className="space-y-4">
       {Object.entries(grouped).sort().map(([date, dateEvents]) => (
-        <Card key={date}>
-          <CardHeader>
-            <CardTitle className="text-lg">{date}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {dateEvents.map((event) => (
-                <li key={event.id} className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${
-                    event.eventType === "deadline" ? "bg-destructive" :
-                    event.eventType === "milestone" ? "bg-blue-500" :
-                    "bg-green-500"
-                  }`} />
-                  <span>{event.title}</span>
-                  <span className="text-xs text-muted-foreground">({event.eventType})</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <GlassCard key={date}>
+          <div className="flex items-center gap-2 mb-3">
+            <CalendarDays className="h-4 w-4 text-primary" />
+            <h3 className="font-semibold text-sm">{date}</h3>
+          </div>
+          <ul className="space-y-2">
+            {dateEvents.map((event) => (
+              <li key={event.id} className="flex items-center gap-3 rounded-lg border border-border/30 bg-background/40 px-3 py-2">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${
+                  event.eventType === "deadline" ? "bg-destructive" :
+                  event.eventType === "milestone" ? "bg-blue-500" :
+                  "bg-green-500"
+                }`} />
+                <span className="text-sm font-medium">{event.title}</span>
+                <span className="text-xs text-muted-foreground">({event.eventType})</span>
+              </li>
+            ))}
+          </ul>
+        </GlassCard>
       ))}
-      {events.length === 0 && <p className="text-muted-foreground p-4">No calendar events.</p>}
     </div>
   )
 }

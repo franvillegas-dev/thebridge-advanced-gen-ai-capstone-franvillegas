@@ -1,21 +1,18 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { GlassCard } from "@/components/ui/glass-card"
 
 interface KpiCardProps {
   title: string
   value: string | number
   description?: string
+  className?: string
 }
 
-export function KpiCard({ title, value, description }: KpiCardProps) {
+export function KpiCard({ title, value, description, className }: KpiCardProps) {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
-      </CardContent>
-    </Card>
+    <GlassCard hover className={className}>
+      <p className="text-sm font-medium text-muted-foreground">{title}</p>
+      <p className="mt-1 text-3xl font-bold tracking-tight">{value}</p>
+      {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
+    </GlassCard>
   )
 }
