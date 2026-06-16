@@ -171,18 +171,23 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           },
         ])
       } else {
+        const finalContent = streamingRef.current
+        const finalAgent = activeAgentRef.current || undefined
+        const entity = pendingResponseRef.current?.created_entity
+        const refreshTargets = pendingResponseRef.current?.refresh
+
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: streamingRef.current,
-            agent: activeAgentRef.current || undefined,
-            createdEntity: pendingResponseRef.current?.created_entity,
+            content: finalContent,
+            agent: finalAgent,
+            createdEntity: entity,
           },
         ])
 
-        if (pendingResponseRef.current?.refresh) {
-          pendingResponseRef.current.refresh.forEach((target) => emitRefresh(target))
+        if (refreshTargets) {
+          refreshTargets.forEach((target) => emitRefresh(target))
         }
       }
     } catch {
