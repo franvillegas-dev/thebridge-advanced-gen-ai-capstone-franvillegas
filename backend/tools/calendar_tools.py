@@ -45,7 +45,7 @@ def _intervals_overlap(start_a: str, end_a: str, start_b: str, end_b: str) -> bo
     return a_start < b_end and a_end > b_start
 
 
-def _find_conflicting_events(conn, event_date: str, start_time: str, end_time: str):
+def _find_conflicting_events(conn, event_date: str, start_time: str, end_time: str) -> list[sqlite3.Row]:
     """Return sqlite3.Row objects for existing events that overlap with the proposed interval."""
     rows = conn.execute(
         "SELECT * FROM calendar_events WHERE event_date = ? ORDER BY start_time ASC",
@@ -53,7 +53,11 @@ def _find_conflicting_events(conn, event_date: str, start_time: str, end_time: s
     ).fetchall()
     conflicts = []
     for row in rows:
-        if _intervals_overlap(start_time, end_time, row["start_time"], row["end_time"]):
+        row_start = row["start_time"]
+        row_end = row["end_time"]
+        if row_start is None or row_end is None:
+            continue
+        if _intervals_overlap(start_time, end_time, row_start, row_end):
             conflicts.append(row)
     return conflicts
 

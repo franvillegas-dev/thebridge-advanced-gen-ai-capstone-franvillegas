@@ -170,3 +170,18 @@ def test_add_with_allow_overlap_inserts_despite_conflict(db_conn):
     assert "added" in allowed
     rows = db_conn.execute("SELECT title FROM calendar_events ORDER BY id").fetchall()
     assert [row["title"] for row in rows] == ["Existing event", "Allowed overlap"]
+
+
+def test_null_times_do_not_crash_overlap_check(db_conn):
+    """Legacy rows with NULL start/end times must not break overlap checks."""
+    db_conn.execute(
+        "INSERT INTO calendar_events (title, event_date, event_type, start_time, end_time) "
+        "VALUES (?, ?, ?, NULL, NULL)",
+        ("Legacy event", "2026-06-16", "deadline"),
+    )
+    db_conn.commit()
+
+    result = check_calendar_overlap.invoke(
+        {"event_date": "2026-06-16", "start_time": "09:00", "end_time": "10:00"}
+    )
+    assert result == "No overlaps found."
