@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
 interface TaskCardProps {
@@ -21,7 +22,7 @@ export function TaskCard({ id, title, status, priority, dueDate, synced, onPubli
   const config = priorityConfig[priority] || priorityConfig.low
 
   return (
-    <div className={`rounded-xl border border-border/40 bg-background/60 backdrop-blur-md shadow-sm transition-shadow hover:shadow-md border-l-4 ${config.border}`}>
+    <div className={cn("rounded-xl border border-border/40 bg-background/60 backdrop-blur-md shadow-sm transition-shadow hover:shadow-md border-l-4", config.border)}>
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-2">

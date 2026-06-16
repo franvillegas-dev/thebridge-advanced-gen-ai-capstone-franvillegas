@@ -1,13 +1,18 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 interface GlassCardProps extends React.ComponentProps<"div"> {
   hover?: boolean
+  asChild?: boolean
 }
 
-export function GlassCard({ className, hover = false, children, ...props }: GlassCardProps) {
+function GlassCard({ className, hover = false, asChild = false, children, ...props }: GlassCardProps) {
+  const Comp = asChild ? Slot : "div"
+
   return (
-    <div
+    <Comp
+      data-slot="glass-card"
       className={cn(
         "rounded-xl border border-border/40 bg-background/60 p-6 shadow-sm backdrop-blur-md",
         hover && "transition-shadow hover:shadow-md",
@@ -16,6 +21,8 @@ export function GlassCard({ className, hover = false, children, ...props }: Glas
       {...props}
     >
       {children}
-    </div>
+    </Comp>
   )
 }
+
+export { GlassCard }

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils"
+import { GlassCard } from "@/components/ui/glass-card"
 
 interface KpiCardProps {
   title: string
@@ -9,15 +9,10 @@ interface KpiCardProps {
 
 export function KpiCard({ title, value, description, className }: KpiCardProps) {
   return (
-    <div
-      className={cn(
-        "rounded-xl border border-border/40 bg-background/60 p-5 shadow-sm backdrop-blur-md transition-shadow hover:shadow-md",
-        className
-      )}
-    >
+    <GlassCard hover className={className}>
       <p className="text-sm font-medium text-muted-foreground">{title}</p>
       <p className="mt-1 text-3xl font-bold tracking-tight">{value}</p>
       {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
-    </div>
+    </GlassCard>
   )
 }
