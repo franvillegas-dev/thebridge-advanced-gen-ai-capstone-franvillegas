@@ -4,14 +4,9 @@ from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate
 from ..tools.tasks_tools import tasks_tools
 from .state import AgentState
 from .utils import extract_text
+from .prompts import TASKS_AGENT_PROMPT
 
 logger = logging.getLogger("agile_agent.tasks_agent")
-
-TASKS_AGENT_PROMPT = """You are a task management specialist. You help users:
-- Create, list, update, delete local tasks
-- View today's pending tasks
-
-Local tasks are stored in the system's SQLite database."""
 
 
 def create_tasks_agent():

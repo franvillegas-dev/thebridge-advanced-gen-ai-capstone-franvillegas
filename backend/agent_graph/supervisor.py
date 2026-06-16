@@ -3,17 +3,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate_limited
 from .state import AgentState
 from .utils import extract_text
+from .prompts import SUPERVISOR_PROMPT
 
 logger = logging.getLogger("agile_agent.supervisor")
-
-SUPERVISOR_PROMPT = """You are a supervisor agent for a task and calendar management system.
-Route the user's message to the most appropriate specialist agent:
-
-- tasks_agent: For daily tasks, todo lists, task management
-- calendar_agent: For deadlines, milestones, dates, calendar events
-- chat: For general conversation, greetings, help
-
-Respond with ONLY the agent name: tasks_agent, calendar_agent, or chat"""
 
 _prompt = ChatPromptTemplate.from_messages([
     ("system", SUPERVISOR_PROMPT),
