@@ -26,8 +26,8 @@ def handle_story(state: AgentState) -> AgentState:
         agent = create_story_agent()
         system_msg = SystemMessage(content=STORY_AGENT_PROMPT)
         response = invoke_with_retry(agent, [system_msg] + messages)
-        logger.info("Story agent response received — content: %s", response.content[:200])
-        return {**state, "messages": state["messages"] + [response]}
+        logger.info("Story agent response received — content: %s", str(response.content)[:200])
+        return {**state, "current_agent": "story_agent", "messages": state["messages"] + [response]}
     except Exception as e:
         logger.error("Story agent error: %s", e)
         if is_rate_limited(e):
@@ -38,7 +38,7 @@ def handle_story(state: AgentState) -> AgentState:
                     fallback_agent = fallback_llm.bind_tools(story_tools)
                     response = invoke_with_retry(fallback_agent, [system_msg] + messages)
                     logger.info("Story agent response via fallback %s", fallback_model)
-                    return {**state, "messages": state["messages"] + [response]}
+                    return {**state, "current_agent": "story_agent", "messages": state["messages"] + [response]}
                 except Exception as e2:
                     logger.error("Fallback story agent also failed: %s", e2)
         return {

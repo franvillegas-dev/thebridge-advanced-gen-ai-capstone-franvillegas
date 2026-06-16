@@ -1,6 +1,7 @@
 import logging
 from langchain_core.messages import AIMessage, SystemMessage
 from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
 from .state import AgentState
 from .supervisor import route_to_agent
 from .jira_agent import handle_jira
@@ -8,11 +9,18 @@ from .tasks_agent import handle_tasks
 from .calendar_agent import handle_calendar
 from .story_agent import handle_story
 from .llm import create_llm, invoke_with_retry, get_fallback_model_name, is_rate_limited
+from ..tools.jira_tools import jira_tools
+from ..tools.tasks_tools import tasks_tools
+from ..tools.calendar_tools import calendar_tools
+from ..tools.story_tools import story_tools
 
 logger = logging.getLogger("agile_agent.graph")
 
 CHAT_PROMPT = """You are a helpful AI assistant for an Agile project management system.
 Answer the user's question conversationally. Be concise and friendly."""
+
+all_tools = jira_tools + tasks_tools + calendar_tools + story_tools
+tool_node = ToolNode(all_tools)
 
 
 def handle_chat(state: AgentState) -> AgentState:
@@ -45,6 +53,14 @@ def handle_chat(state: AgentState) -> AgentState:
         }
 
 
+def should_continue(state: AgentState) -> str:
+    messages = state["messages"]
+    last_message = messages[-1]
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"
+    return END
+
+
 def build_graph() -> StateGraph:
     logger.info("Building LangGraph workflow")
     workflow = StateGraph(AgentState)
@@ -55,6 +71,7 @@ def build_graph() -> StateGraph:
     workflow.add_node("calendar_agent", handle_calendar)
     workflow.add_node("story_agent", handle_story)
     workflow.add_node("responder", handle_chat)
+    workflow.add_node("tools", tool_node)
 
     workflow.set_entry_point("supervisor")
     workflow.add_conditional_edges(
@@ -68,10 +85,26 @@ def build_graph() -> StateGraph:
             "chat": "responder",
         },
     )
-    workflow.add_edge("jira_agent", "responder")
-    workflow.add_edge("tasks_agent", "responder")
-    workflow.add_edge("calendar_agent", "responder")
-    workflow.add_edge("story_agent", "responder")
+
+    for agent in ["jira_agent", "tasks_agent", "calendar_agent", "story_agent"]:
+        workflow.add_conditional_edges(
+            agent,
+            should_continue,
+            {"tools": "tools", END: END},
+        )
+
+    workflow.add_conditional_edges(
+        "tools",
+        lambda state: state.get("current_agent", "responder"),
+        {
+            "jira_agent": "jira_agent",
+            "tasks_agent": "tasks_agent",
+            "calendar_agent": "calendar_agent",
+            "story_agent": "story_agent",
+            "responder": "responder",
+        },
+    )
+
     workflow.add_edge("responder", END)
 
     compiled = workflow.compile()
