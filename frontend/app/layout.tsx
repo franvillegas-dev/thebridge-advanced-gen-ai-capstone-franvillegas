@@ -5,6 +5,7 @@ import { ToastProvider } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { ChatProvider } from "@/components/chat/ChatContext"
 import { ChatPanel } from "@/components/chat/ChatPanel"
+import { ConfigChecker } from "@/components/ConfigChecker"
 
 export const metadata: Metadata = {
   title: "Agile Agent",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="md:ml-56 pb-16 md:pb-0 md:mr-[400px]">
               {children}
             </div>
+            <ConfigChecker />
             <ChatPanel />
             <Toaster />
           </ChatProvider>
