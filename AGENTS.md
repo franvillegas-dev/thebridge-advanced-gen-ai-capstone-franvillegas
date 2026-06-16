@@ -40,3 +40,7 @@ All branch names and commit messages must be written in **English**. This keeps 
    ```
 
 5. `main` es solo para pases a producción vía merge manual desde `develop`. No se toca directamente.
+
+## Preferencias del usuario
+
+- Al completar una tarea en una rama `feature/`, `fix/` o `docs/`, el agente debe integrar los cambios en `develop` mediante merge (`--no-ff`) y eliminar la rama de trabajo **sin preguntar al usuario**, siempre que las verificaciones del proyecto pasen.
