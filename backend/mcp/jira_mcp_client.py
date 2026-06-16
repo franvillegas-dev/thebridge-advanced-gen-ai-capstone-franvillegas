@@ -10,28 +10,40 @@ class JiraMCPClient:
         self.mcp_server_url = os.getenv("JIRA_MCP_SERVER", "").rstrip("/") or None
 
     async def search_issues(self, jql: str, max_results: int = 20) -> list[dict]:
-        if self.mcp_server_url:
-            return await self._mcp_call("search_issues", {"jql": jql, "maxResults": max_results})
-        return await self._rest_search(jql, max_results)
+        try:
+            if self.mcp_server_url:
+                return await self._mcp_call("search_issues", {"jql": jql, "maxResults": max_results})
+            return await self._rest_search(jql, max_results)
+        except Exception as e:
+            return [{"error": f"Could not connect to Jira: {e}"}]
 
     async def get_issue(self, issue_key: str) -> dict:
-        if self.mcp_server_url:
-            return await self._mcp_call("get_issue", {"issueKey": issue_key})
-        return await self._rest_get_issue(issue_key)
+        try:
+            if self.mcp_server_url:
+                return await self._mcp_call("get_issue", {"issueKey": issue_key})
+            return await self._rest_get_issue(issue_key)
+        except Exception as e:
+            return {"error": f"Could not fetch issue {issue_key}: {e}"}
 
     async def create_issue(self, project: str, summary: str, issue_type: str = "Task",
                            description: str = "", priority: str = "Medium") -> dict:
-        if self.mcp_server_url:
-            return await self._mcp_call("create_issue", {
-                "project": project, "summary": summary,
-                "issueType": issue_type, "description": description, "priority": priority,
-            })
-        return await self._rest_create_issue(project, summary, issue_type, description, priority)
+        try:
+            if self.mcp_server_url:
+                return await self._mcp_call("create_issue", {
+                    "project": project, "summary": summary,
+                    "issueType": issue_type, "description": description, "priority": priority,
+                })
+            return await self._rest_create_issue(project, summary, issue_type, description, priority)
+        except Exception as e:
+            return {"error": f"Could not create Jira issue: {e}"}
 
     async def update_issue(self, issue_key: str, fields: dict) -> dict:
-        if self.mcp_server_url:
-            return await self._mcp_call("update_issue", {"issueKey": issue_key, "fields": fields})
-        return await self._rest_update_issue(issue_key, fields)
+        try:
+            if self.mcp_server_url:
+                return await self._mcp_call("update_issue", {"issueKey": issue_key, "fields": fields})
+            return await self._rest_update_issue(issue_key, fields)
+        except Exception as e:
+            return {"error": f"Could not update issue {issue_key}: {e}"}
 
     async def _mcp_call(self, method: str, params: dict) -> dict:
         async with httpx.AsyncClient() as client:

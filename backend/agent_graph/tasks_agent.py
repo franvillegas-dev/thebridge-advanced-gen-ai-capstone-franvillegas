@@ -17,8 +17,17 @@ def create_tasks_agent():
 
 
 def handle_tasks(state: AgentState) -> AgentState:
+    from langchain_core.messages import AIMessage
     messages = state["messages"]
-    agent = create_tasks_agent()
-    system_msg = SystemMessage(content=TASKS_AGENT_PROMPT)
-    response = agent.invoke([system_msg] + messages)
-    return {**state, "messages": state["messages"] + [response]}
+    try:
+        agent = create_tasks_agent()
+        system_msg = SystemMessage(content=TASKS_AGENT_PROMPT)
+        response = agent.invoke([system_msg] + messages)
+        return {**state, "messages": state["messages"] + [response]}
+    except Exception:
+        return {
+            **state,
+            "messages": state["messages"] + [
+                AIMessage(content="Lo siento, no pude conectar con el asistente de IA. Verifica que OPENAI_API_KEY esté configurada correctamente en backend/.env")
+            ],
+        }

@@ -16,19 +16,24 @@ def get_jira_client() -> JiraMCPClient:
 def search_issues(jql: str, max_results: int = 20) -> str:
     """Search Jira issues using JQL. Returns a formatted list of issues."""
     async def _run():
-        client = get_jira_client()
-        issues = await client.search_issues(jql, max_results)
-        if not issues:
-            return "No issues found."
-        lines = []
-        for issue in issues[:max_results]:
-            key = issue.get("key", "?")
-            summary = issue.get("fields", {}).get("summary", "?")
-            status = issue.get("fields", {}).get("status", {}).get("name", "?")
-            assignee = issue.get("fields", {}).get("assignee", {}) or {}
-            assignee_name = assignee.get("displayName", "Unassigned")
-            lines.append(f"- {key}: {summary} [{status}] assigned to {assignee_name}")
-        return "\n".join(lines)
+        try:
+            client = get_jira_client()
+            issues = await client.search_issues(jql, max_results)
+            if not issues:
+                return "No issues found."
+            if len(issues) == 1 and "error" in issues[0]:
+                return issues[0]["error"]
+            lines = []
+            for issue in issues[:max_results]:
+                key = issue.get("key", "?")
+                summary = issue.get("fields", {}).get("summary", "?")
+                status = issue.get("fields", {}).get("status", {}).get("name", "?")
+                assignee = issue.get("fields", {}).get("assignee", {}) or {}
+                assignee_name = assignee.get("displayName", "Unassigned")
+                lines.append(f"- {key}: {summary} [{status}] assigned to {assignee_name}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"Error searching Jira: {e}. Verify JIRA_URL, JIRA_EMAIL, and JIRA_API_TOKEN in backend/.env"
     return asyncio.run(_run())
 
 
@@ -36,19 +41,24 @@ def search_issues(jql: str, max_results: int = 20) -> str:
 def get_issue(issue_key: str) -> str:
     """Get detailed info about a specific Jira issue by key (e.g. PROJ-123)."""
     async def _run():
-        client = get_jira_client()
-        issue = await client.get_issue(issue_key)
-        fields = issue.get("fields", {})
-        return (
-            f"Key: {issue.get('key')}\n"
-            f"Summary: {fields.get('summary')}\n"
-            f"Status: {fields.get('status', {}).get('name')}\n"
-            f"Type: {fields.get('issuetype', {}).get('name')}\n"
-            f"Assignee: {fields.get('assignee', {}).get('displayName', 'Unassigned')}\n"
-            f"Priority: {fields.get('priority', {}).get('name')}\n"
-            f"Created: {fields.get('created')}\n"
-            f"Description: {fields.get('description', 'N/A')}"
-        )
+        try:
+            client = get_jira_client()
+            issue = await client.get_issue(issue_key)
+            if "error" in issue:
+                return issue["error"]
+            fields = issue.get("fields", {})
+            return (
+                f"Key: {issue.get('key')}\n"
+                f"Summary: {fields.get('summary')}\n"
+                f"Status: {fields.get('status', {}).get('name')}\n"
+                f"Type: {fields.get('issuetype', {}).get('name')}\n"
+                f"Assignee: {fields.get('assignee', {}).get('displayName', 'Unassigned')}\n"
+                f"Priority: {fields.get('priority', {}).get('name')}\n"
+                f"Created: {fields.get('created')}\n"
+                f"Description: {fields.get('description', 'N/A')}"
+            )
+        except Exception as e:
+            return f"Error fetching issue {issue_key}: {e}. Verify JIRA_URL, JIRA_EMAIL, and JIRA_API_TOKEN in backend/.env"
     return asyncio.run(_run())
 
 
@@ -57,10 +67,15 @@ def create_jira_issue(project: str, summary: str, issue_type: str = "Task",
                        description: str = "", priority: str = "Medium") -> str:
     """Create a new issue in Jira. Returns the issue key."""
     async def _run():
-        client = get_jira_client()
-        result = await client.create_issue(project, summary, issue_type, description, priority)
-        key = result.get("key", "?")
-        return f"Issue created: {key}"
+        try:
+            client = get_jira_client()
+            result = await client.create_issue(project, summary, issue_type, description, priority)
+            if "error" in result:
+                return result["error"]
+            key = result.get("key", "?")
+            return f"Issue created: {key}"
+        except Exception as e:
+            return f"Error creating Jira issue: {e}. Verify JIRA_URL, JIRA_EMAIL, and JIRA_API_TOKEN in backend/.env"
     return asyncio.run(_run())
 
 
@@ -69,17 +84,22 @@ def update_jira_issue(issue_key: str, summary: Optional[str] = None,
                        description: Optional[str] = None) -> str:
     """Update an existing Jira issue. Only provided fields will be changed."""
     async def _run():
-        client = get_jira_client()
-        fields = {}
-        if summary:
-            fields["summary"] = summary
-        if description:
-            fields["description"] = {
-                "type": "doc", "version": 1,
-                "content": [{"type": "paragraph", "content": [{"type": "text", "text": description}]}],
-            }
-        await client.update_issue(issue_key, fields)
-        return f"Issue {issue_key} updated."
+        try:
+            client = get_jira_client()
+            fields = {}
+            if summary:
+                fields["summary"] = summary
+            if description:
+                fields["description"] = {
+                    "type": "doc", "version": 1,
+                    "content": [{"type": "paragraph", "content": [{"type": "text", "text": description}]}],
+                }
+            result = await client.update_issue(issue_key, fields)
+            if "error" in result:
+                return result["error"]
+            return f"Issue {issue_key} updated."
+        except Exception as e:
+            return f"Error updating issue {issue_key}: {e}. Verify JIRA_URL, JIRA_EMAIL, and JIRA_API_TOKEN in backend/.env"
     return asyncio.run(_run())
 
 

@@ -24,7 +24,10 @@ _supervisor_chain = _prompt | _llm
 def route_to_agent(state: AgentState) -> str:
     messages = state["messages"]
     last_message = messages[-1].content if messages else ""
-    response = _supervisor_chain.invoke({"input": last_message})
-    agent_name = response.content.strip().lower()
+    try:
+        response = _supervisor_chain.invoke({"input": last_message})
+        agent_name = response.content.strip().lower()
+    except Exception:
+        return "chat"
     valid_agents = {"jira_agent", "tasks_agent", "calendar_agent", "story_agent", "chat"}
     return agent_name if agent_name in valid_agents else "chat"
