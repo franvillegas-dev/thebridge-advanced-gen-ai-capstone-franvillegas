@@ -1,5 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from .state import AgentState
 
 SUPERVISOR_PROMPT = """You are a supervisor agent for a Jira project management system.
@@ -17,7 +17,7 @@ _prompt = ChatPromptTemplate.from_messages([
     ("system", SUPERVISOR_PROMPT),
     ("human", "{input}"),
 ])
-_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+_llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 _supervisor_chain = _prompt | _llm
 
 
