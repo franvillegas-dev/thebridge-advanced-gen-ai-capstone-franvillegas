@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status")
   const projectId = searchParams.get("project_id")
 
-  let conditions = []
+  const conditions = []
   if (status) conditions.push(eq(localTasks.status, status))
   if (projectId) conditions.push(eq(localTasks.projectId, parseInt(projectId)))
 
