@@ -1,3 +1,4 @@
+import logging
 from langgraph.graph import StateGraph, END
 from .state import AgentState
 from .supervisor import route_to_agent
@@ -6,8 +7,11 @@ from .tasks_agent import handle_tasks
 from .calendar_agent import handle_calendar
 from .story_agent import handle_story
 
+logger = logging.getLogger("agile_agent.graph")
+
 
 def build_graph() -> StateGraph:
+    logger.info("Building LangGraph workflow")
     workflow = StateGraph(AgentState)
 
     workflow.add_node("supervisor", lambda state: state)
@@ -35,7 +39,16 @@ def build_graph() -> StateGraph:
     workflow.add_edge("story_agent", "responder")
     workflow.add_edge("responder", END)
 
-    return workflow.compile()
+    compiled = workflow.compile()
+    logger.info("LangGraph workflow compiled successfully")
+    return compiled
 
 
 graph = build_graph()
+
+
+def log_invocation(state: AgentState) -> AgentState:
+    last_msg = state["messages"][-1].content if state["messages"] else ""
+    agent = state.get("current_agent", "unknown")
+    logger.info("Graph invoked — user_message=%s, current_agent=%s", last_msg[:100], agent)
+    return state
