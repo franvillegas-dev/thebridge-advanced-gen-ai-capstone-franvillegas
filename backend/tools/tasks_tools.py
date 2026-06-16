@@ -2,8 +2,7 @@ import sqlite3
 import os
 import logging
 from langchain_core.tools import tool
-from ..mcp.jira_mcp_client import JiraMCPClient
-import asyncio
+
 
 logger = logging.getLogger("agile_agent.tools.tasks")
 
@@ -123,37 +122,4 @@ def delete_task(task_id: int) -> str:
     return f"Task {task_id} deleted."
 
 
-@tool
-def publish_task_to_jira(task_id: int, project_key: str = "") -> str:
-    """Publish a local task as a Jira issue. Requires project_key (e.g. PROJ)."""
-    logger.info("Tool publish_task_to_jira called — task_id=%d, project_key=%s", task_id, project_key)
-    rows = _fetch("SELECT * FROM local_tasks WHERE id = ?", (task_id,))
-    if not rows:
-        logger.warning("publish_task_to_jira: task %d not found", task_id)
-        return f"Task {task_id} not found."
-    row = rows[0]
-    if row["synced"]:
-        logger.info("publish_task_to_jira: task %d already published as %s", task_id, row["jira_issue_id"])
-        return f"Task {task_id} already published (Jira issue: {row['jira_issue_id']})."
-
-    async def _publish():
-        client = JiraMCPClient()
-        logger.info("publish_task_to_jira: creating Jira issue for task %d", task_id)
-        result = await client.create_issue(
-            project=project_key,
-            summary=row["title"],
-            description=row["description"] or "",
-            issue_type="Task",
-        )
-        issue_key = result.get("key")
-        _exec(
-            "UPDATE local_tasks SET jira_issue_id = ?, synced = 1 WHERE id = ?",
-            (issue_key, task_id),
-        )
-        logger.info("publish_task_to_jira: task %d published as %s", task_id, issue_key)
-        return f"Task published as Jira issue {issue_key}."
-
-    return asyncio.run(_publish())
-
-
-tasks_tools = [create_task, list_tasks, update_task, delete_task, publish_task_to_jira]
+tasks_tools = [create_task, list_tasks, update_task, delete_task]
