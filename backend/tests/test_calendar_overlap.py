@@ -76,13 +76,15 @@ def test_nested_intervals():
     assert _intervals_overlap("09:00", "12:00", "10:00", "11:00") is True
 
 
+def test_time_to_minutes_normalizes_single_digit_components():
+    assert _time_to_minutes("9:00") == 540
+    assert _time_to_minutes("09:5") == 545
+    assert _time_to_minutes("9:5") == 545
+
+
 def test_time_to_minutes_rejects_invalid_formats():
     with pytest.raises(ValueError, match="Invalid time format"):
         _time_to_minutes("not-a-time")
-    with pytest.raises(ValueError, match="Invalid time format"):
-        _time_to_minutes("9:00")
-    with pytest.raises(ValueError, match="Invalid time format"):
-        _time_to_minutes("09:0")
     with pytest.raises(ValueError, match="Invalid time format"):
         _time_to_minutes("25:00")
     with pytest.raises(ValueError, match="Invalid time format"):
@@ -178,6 +180,21 @@ def test_null_times_do_not_crash_overlap_check(db_conn):
         "INSERT INTO calendar_events (title, event_date, event_type, start_time, end_time) "
         "VALUES (?, ?, ?, NULL, NULL)",
         ("Legacy event", "2026-06-16", "deadline"),
+    )
+    db_conn.commit()
+
+    result = check_calendar_overlap.invoke(
+        {"event_date": "2026-06-16", "start_time": "09:00", "end_time": "10:00"}
+    )
+    assert result == "No overlaps found."
+
+
+def test_empty_string_times_do_not_crash_overlap_check(db_conn):
+    """Rows with empty-string start/end times must be skipped like NULL values."""
+    db_conn.execute(
+        "INSERT INTO calendar_events (title, event_date, event_type, start_time, end_time) "
+        "VALUES (?, ?, ?, ?, ?)",
+        ("Empty time event", "2026-06-16", "deadline", "", ""),
     )
     db_conn.commit()
 

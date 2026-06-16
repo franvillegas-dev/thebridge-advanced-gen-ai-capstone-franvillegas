@@ -23,7 +23,7 @@ def _time_to_minutes(t: str) -> int:
     if not isinstance(t, str):
         raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.")
     parts = t.split(":")
-    if len(parts) != 2 or len(parts[0]) != 2 or len(parts[1]) != 2:
+    if len(parts) != 2 or not (1 <= len(parts[0]) <= 2) or not (1 <= len(parts[1]) <= 2):
         raise ValueError(f"Invalid time format: {t!r}. Expected HH:MM.")
     try:
         h, m = map(int, parts)
@@ -55,7 +55,7 @@ def _find_conflicting_events(conn, event_date: str, start_time: str, end_time: s
     for row in rows:
         row_start = row["start_time"]
         row_end = row["end_time"]
-        if row_start is None or row_end is None:
+        if not row_start or not row_end:
             continue
         if _intervals_overlap(start_time, end_time, row_start, row_end):
             conflicts.append(row)
