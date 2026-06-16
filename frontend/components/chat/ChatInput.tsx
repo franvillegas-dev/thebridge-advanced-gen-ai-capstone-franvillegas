@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react"
 import { Button } from "@/components/ui/button"
+import { Send } from "lucide-react"
 
 interface ChatInputProps {
   onSend: (message: string) => void
@@ -17,17 +18,17 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t">
+    <form onSubmit={handleSubmit} className="flex gap-2 border-t border-border/40 bg-background/50 p-4 backdrop-blur-sm">
       <input
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         disabled={disabled}
         placeholder="Ask about your projects..."
-        className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex-1 rounded-lg border border-border/40 bg-background/60 px-3 py-2 text-sm backdrop-blur-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
-      <Button type="submit" disabled={disabled || !input.trim()}>
-        Send
+      <Button type="submit" disabled={disabled || !input.trim()} size="icon">
+        <Send className="h-4 w-4" />
       </Button>
     </form>
   )
